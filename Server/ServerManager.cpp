@@ -11,7 +11,7 @@ void ServerManager::newClientConnectionReceived()
 {
     auto client = server->nextPendingConnection();
     clients << client;
-    auto id = clients.length() - 1;
+    auto id = clients.length();
     connect(client, &QTcpSocket::disconnected, this, &ServerManager::clientConnectionAborted);
     client->setProperty("id", id);
     emit newClientConnected(client);

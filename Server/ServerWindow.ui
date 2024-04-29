@@ -6,21 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>713</width>
-    <height>449</height>
+    <width>899</width>
+    <height>509</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Server</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>661</width>
-      <height>371</height>
+      <width>811</width>
+      <height>441</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="3,1">

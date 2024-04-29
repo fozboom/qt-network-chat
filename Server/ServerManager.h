@@ -8,7 +8,7 @@ class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(int portNumber = 50000, QObject *parent = nullptr);
+    explicit ServerManager(int portNumber = 8080, QObject *parent = nullptr);
 
 signals:
     void newClientConnected(QTcpSocket * client);

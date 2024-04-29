@@ -6,6 +6,7 @@ ServerWindow::ServerWindow(QWidget *parent)
     , ui(new Ui::ServerWindow)
 {
     ui->setupUi(this);
+    setupServerConfiguration();
 }
 
 ServerWindow::~ServerWindow()
@@ -16,16 +17,16 @@ ServerWindow::~ServerWindow()
 void ServerWindow::newClientConnected(QTcpSocket *client)
 {
     auto id = client->property("id").toInt();
-    ui->listClients->addItem(QString("Client with id %d connected").arg(id));
+    ui->listClients->addItem(QString("Client with id %1 connected").arg(id));
     auto chatWindow = new ChatWindow(client);
-    ui->tabChats->addTab(chatWindow, QString("Client %d").arg(id));
+    ui->tabChats->addTab(chatWindow, QString("Client %1").arg(id));
 
 }
 
 void ServerWindow::clientDisconnected(QTcpSocket *client)
 {
     auto id = client->property("id").toInt();
-    ui->listClients->addItem(QString("Client with id %d disconnected").arg(id));
+    ui->listClients->addItem(QString("Client with id %1 disconnected").arg(id));
 }
 
 void ServerWindow::setupServerConfiguration()

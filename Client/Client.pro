@@ -9,15 +9,18 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    ChatMessageInfo.cpp \
     ClientManager.cpp \
     ClientWindow.cpp \
     client_main.cpp
 
 HEADERS += \
+    ChatMessageInfo.h \
     ClientManager.h \
     ClientWindow.h
 
 FORMS += \
+    ChatMessageInfo.ui \
     ClientWindow.ui
 
 # Default rules for deployment.

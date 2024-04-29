@@ -9,6 +9,7 @@ ChatWindow::ChatWindow(QTcpSocket * _client, QWidget *parent)
     ui->setupUi(this);
 
     connect(client, &QTcpSocket::readyRead, this, &ChatWindow::dataReceived);
+    connect(client, &QTcpSocket::disconnected, this, &ChatWindow::clientDisconnected);
 }
 
 ChatWindow::~ChatWindow()
@@ -24,7 +25,8 @@ void ChatWindow::dataReceived()
 
 void ChatWindow::clientDisconnected()
 {
-    ui->sendLayout->setEnabled(false);
+    ui->btnSend->setEnabled(false);
+    ui->editMessage->setEnabled(false);
 }
 
 
