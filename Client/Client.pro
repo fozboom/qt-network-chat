@@ -12,12 +12,14 @@ SOURCES += \
     ChatMessageInfo.cpp \
     ClientManager.cpp \
     ClientWindow.cpp \
+    ConversationProtocol.cpp \
     client_main.cpp
 
 HEADERS += \
     ChatMessageInfo.h \
     ClientManager.h \
-    ClientWindow.h
+    ClientWindow.h \
+    ConversationProtocol.h
 
 FORMS += \
     ChatMessageInfo.ui \

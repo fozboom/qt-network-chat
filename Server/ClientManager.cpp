@@ -1,12 +1,21 @@
 #include "ClientManager.h"
 #include <QDebug>
-
+#include <QString>
 ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
     : QObject{parent}
     , ip(_ip)
     , port(_port)
 {
     socket = new QTcpSocket(this);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
+}
+
+ClientManager::ClientManager(QTcpSocket *_client, QObject *parent)
+    : QObject{parent}
+    , socket(_client)
+{
     connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
     connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
     connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
@@ -37,6 +46,13 @@ void ClientManager::sendUserName(QString name)
 void ClientManager::sendIsTypingIndicator()
 {
     socket->write(protocol.sendTypingIndicator());
+}
+
+QString ClientManager::name() const
+{
+    auto id = socket->property("id").toInt();
+    auto name = protocol.getName().length() > 0 ? protocol.getName() : QString("Client (%1)").arg(id);
+    return name;
 }
 
 void ClientManager::readyRead()

@@ -22,6 +22,7 @@ public:
 private slots:
     void newClientConnected(QTcpSocket *client);
     void clientDisconnected(QTcpSocket *client);
+    void setClientName(QString name);
 private:
     Ui::ServerWindow *ui;
     ServerManager * server;

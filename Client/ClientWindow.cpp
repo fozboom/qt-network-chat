@@ -2,6 +2,7 @@
 #include "ui_ClientWindow.h"
 #include <QDebug>
 #include "ChatMessageInfo.h"
+#include <QLineEdit>
 
 ClientWindow::ClientWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -19,9 +20,9 @@ ClientWindow::~ClientWindow()
 
 
 
-void ClientWindow::dataReceived(QByteArray data)
+void ClientWindow::dataReceived(QString message)
 {
-    createMessage(data, false);
+    createMessage(message, false);
 }
 
 
@@ -51,15 +52,17 @@ void ClientWindow::on_actionConnect_triggered()
         ui->sendLayout->setEnabled(false);
         qDebug() << "Disconnected from server";
     });
-    connect(client, &ClientManager::dataReceived, this, &ClientWindow::dataReceived);
+    connect(client, &ClientManager::textMessageReceived, this, &ClientWindow::dataReceived);
+    connect(client, &ClientManager::isTyping, this, &ClientWindow::actionOnTypingIndicator);
+    connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
 
     client->connectToServer();
 }
 
-void ClientWindow::createMessage(const QByteArray& data, bool isMyMessage)
+void ClientWindow::createMessage(const QString& message, bool isMyMessage)
 {
     auto chatMessageInfo = std::make_unique<ChatMessageInfo>(this);
-    chatMessageInfo->setMessage(data, isMyMessage);
+    chatMessageInfo->setMessage(message, isMyMessage);
     auto listItemWidget = new QListWidgetItem();
     listItemWidget->setSizeHint(QSize(0,65));
     ui->messages->addItem(listItemWidget);
@@ -68,3 +71,17 @@ void ClientWindow::createMessage(const QByteArray& data, bool isMyMessage)
     }
     ui->messages->setItemWidget(listItemWidget, chatMessageInfo.release());
 }
+
+
+void ClientWindow::actionOnTypingIndicator()
+{
+    statusBar()->showMessage("Server is typing...", 800);
+}
+
+
+void ClientWindow::on_userNameEdit_returnPressed()
+{
+    auto userName = ui->userNameEdit->text().trimmed();
+    client->sendUserName(userName);
+}
+

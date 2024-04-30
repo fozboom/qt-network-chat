@@ -19,18 +19,22 @@ public:
     ~ClientWindow();
 
 private slots:
-    void dataReceived(QByteArray data);
+    void dataReceived(QString message);
 
     void on_btnSend_clicked();
 
     void on_actionConnect_triggered();
+
+    void actionOnTypingIndicator();
+
+    void on_userNameEdit_returnPressed();
 
 private:
     Ui::ClientWindow *ui;
     ClientManager *client;
 
 private:
-    void createMessage(const QByteArray& data, bool isMyMessage);
+    void createMessage(const QString &message, bool isMyMessage);
 
 };
 #endif // CLIENTWINDOW_H

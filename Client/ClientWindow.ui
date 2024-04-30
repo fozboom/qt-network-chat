@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>764</width>
-    <height>511</height>
+    <width>709</width>
+    <height>483</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>ClientWindow</string>
+   <string>Client</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QGroupBox" name="groupBox">
@@ -19,44 +19,59 @@
      <rect>
       <x>20</x>
       <y>10</y>
-      <width>711</width>
-      <height>441</height>
+      <width>661</width>
+      <height>421</height>
      </rect>
     </property>
     <property name="title">
      <string>Chat</string>
     </property>
-    <widget class="QWidget" name="layoutWidget">
+    <widget class="QWidget" name="">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>30</y>
-       <width>691</width>
-       <height>401</height>
+       <y>40</y>
+       <width>641</width>
+       <height>381</height>
       </rect>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
-       <widget class="QListWidget" name="messages"/>
+       <widget class="QLineEdit" name="userNameEdit">
+        <property name="placeholderText">
+         <string>Enter your nickname</string>
+        </property>
+       </widget>
       </item>
       <item>
-       <layout class="QHBoxLayout" name="sendLayout">
+       <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>Message:</string>
-          </property>
-         </widget>
+         <widget class="QListWidget" name="messages"/>
         </item>
         <item>
-         <widget class="QLineEdit" name="editMessage"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="btnSend">
-          <property name="text">
-           <string>Send</string>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="sendLayout">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Message:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="editMessage">
+            <property name="placeholderText">
+             <string>Enter message</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="btnSend">
+            <property name="text">
+             <string>Send</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
@@ -69,7 +84,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>764</width>
+     <width>709</width>
      <height>27</height>
     </rect>
    </property>

@@ -10,10 +10,12 @@ class ClientManager : public QObject
     Q_OBJECT
 public:
     explicit ClientManager(QHostAddress _ip = QHostAddress::LocalHost, int _port = 8080, QObject *parent = nullptr);
+    explicit ClientManager(QTcpSocket * _client, QObject *parent = nullptr);
     void connectToServer();
     void sendMessage(QString message);
     void sendUserName(QString name);
     void sendIsTypingIndicator();
+    QString name() const;
 
 signals:
     void connected();
