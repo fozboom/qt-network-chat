@@ -56,7 +56,7 @@ void ServerWindow::setupServerConfiguration()
 void ServerWindow::on_tabChats_tabCloseRequested(int index)
 {
     auto chatWindow = qobject_cast<ChatWindow *> (ui->tabChats->widget(index));
-
+    server->disconnectClient(chatWindow->getClient(), "You have been disconnected by the server.");
     chatWindow->disconnect();
     ui->tabChats->removeTab(index);
 }

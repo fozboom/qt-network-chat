@@ -60,6 +60,11 @@ QString ClientManager::name() const
     return name;
 }
 
+QTcpSocket *ClientManager::getClient() const
+{
+    return socket;
+}
+
 void ClientManager::readyRead()
 {
     auto data = socket->readAll();

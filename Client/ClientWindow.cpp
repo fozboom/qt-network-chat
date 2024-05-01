@@ -50,7 +50,9 @@ void ClientWindow::setupClient()
         qDebug() << "Connected to server";
     });
     connect(client, &ClientManager::disconnected, [this] (){
-        ui->sendLayout->setEnabled(false);
+        ui->editMessage->setEnabled(false);
+        ui->btnSend->setEnabled(false);
+        statusBar()->showMessage("You have been disconnected by the server", 10000);
         qDebug() << "Disconnected from server";
     });
     connect(client, &ClientManager::textMessageReceived, this, &ClientWindow::dataReceived);

@@ -17,6 +17,7 @@ public:
     explicit ChatWindow(QTcpSocket * _client, QWidget *parent = nullptr);
     void disconnect();
     ~ChatWindow();
+    QTcpSocket* getClient() const;
 private slots:
 
     void clientDisconnected();

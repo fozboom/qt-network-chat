@@ -18,6 +18,7 @@ public:
     void sendUserName(QString name);
     void sendIsTypingIndicator();
     QString name() const;
+    QTcpSocket* getClient() const;
 
 signals:
     void connected();

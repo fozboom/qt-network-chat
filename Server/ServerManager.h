@@ -11,6 +11,7 @@ class ServerManager : public QObject
 public:
     explicit ServerManager(int portNumber = 8080, QObject *parent = nullptr);
     void notifyAllClients (QString prevName, QString name);
+    void disconnectClient(QTcpSocket *client, const QString& reason);
 
 public slots:
     void onTextForOtherClients(QString message, QString receiver, QString sender);
@@ -30,6 +31,7 @@ private:
     ConversationProtocol protocol;
 private:
     void startServer(int portNumber);
+
 };
 
 #endif // SERVERMANAGER_H

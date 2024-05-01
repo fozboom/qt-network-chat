@@ -26,6 +26,11 @@ ChatWindow::~ChatWindow()
     delete ui;
 }
 
+QTcpSocket *ChatWindow::getClient() const
+{
+    return client->getClient();
+}
+
 
 void ChatWindow::clientDisconnected()
 {

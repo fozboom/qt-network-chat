@@ -81,3 +81,9 @@ void ServerManager::startServer(int portNumber)
     connect(server, &QTcpServer::newConnection, this, &ServerManager::newClientConnectionReceived);
     server->listen(QHostAddress::Any, portNumber);
 }
+
+void ServerManager::disconnectClient(QTcpSocket *client, const QString &reason)
+{
+    auto message = protocol.sendTextMessage(reason, client->property("clientName").toString(), "Server");
+    client->write(message);
+}
