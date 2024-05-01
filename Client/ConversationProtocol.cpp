@@ -8,7 +8,7 @@ QByteArray ConversationProtocol::serializeMessageData(MessageType messageType, Q
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_6_3);
+    dataStream.setVersion(QDataStream::Qt_5_0);
     dataStream << messageType << chatMessage;
     return serializedData;
 }
@@ -17,7 +17,7 @@ QByteArray ConversationProtocol::sendTextMessage (QString message, QString recei
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_3);
+    out.setVersion(QDataStream::Qt_5_0);
     out << TEXT_SENDING << receiver << message;
     return ba;
 }
@@ -36,7 +36,7 @@ QByteArray ConversationProtocol::sendUserName(QString name)
 void ConversationProtocol::loadData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
-    in.setVersion(QDataStream::Qt_6_3);
+    in.setVersion(QDataStream::Qt_5_0);
     in >> type;
     qDebug() << "loadData";
     switch(type) {
