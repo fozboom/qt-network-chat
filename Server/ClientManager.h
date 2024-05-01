@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include "ConversationProtocol.h"
+#include <QHostAddress>
 
 class ClientManager : public QObject
 {
