@@ -23,27 +23,14 @@ void ServerManager::notifyAllClients(QString prevName, QString name)
 void ServerManager::onTextForOtherClients(QString message, QString receiver, QString sender)
 {
     auto mes = protocol.sendTextMessage(message, receiver, sender);
-    if (receiver == "All")
+
+    foreach(auto c, clients)
     {
-        foreach(auto c, clients)
+        auto clientName = c->property("clientName").toString();
+        if (clientName == receiver)
         {
-            auto clientName = c->property("clientName").toString();
-            if (clientName != sender)
-            {
-                c->write(mes);
-            }
-        }
-    }
-    else
-    {
-        foreach(auto c, clients)
-        {
-            auto clientName = c->property("clientName").toString();
-            if (clientName == receiver)
-            {
-                c->write(mes);
-                return;
-            }
+            c->write(mes);
+            return;
         }
     }
 }

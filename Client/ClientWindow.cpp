@@ -98,7 +98,6 @@ void ClientWindow::on_userNameEdit_returnPressed()
 void ClientWindow::onConnectionACK(QString myName, QStringList clients)
 {
     ui->receiverBox->clear();
-    clients.prepend("All");
     clients.prepend("Server");
     foreach (auto cl, clients) {
         ui->receiverBox->addItem(cl);

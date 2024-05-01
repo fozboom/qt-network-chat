@@ -45,11 +45,11 @@ void ChatWindow::on_btnSend_clicked()
 
 void ChatWindow::textMessageReceived(QString message, QString receiver, QString sender)
 {
-    if (receiver == "Server" || receiver == "All")
+    if (receiver == "Server")
     {
         ui->listMessages->addItem(QString("%1: %2").arg(sender, message));
     }
-    else if (receiver != "Server")
+    else
     {
         emit textForOtherClients(message, receiver, client->name());
     }
