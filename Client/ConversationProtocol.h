@@ -3,6 +3,8 @@
 #include <QByteArray>
 #include <QString>
 #include <QStringList>
+#include <QDataStream>
+
 class ConversationProtocol
 {
 public:

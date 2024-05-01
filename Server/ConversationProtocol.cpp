@@ -1,5 +1,6 @@
 #include "ConversationProtocol.h"
 #include <QIODevice>
+#include <QDataStream>
 
 ConversationProtocol::ConversationProtocol() {}
 

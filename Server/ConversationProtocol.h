@@ -2,6 +2,7 @@
 #define CONVERSATIONPROTOCOL_H
 #include <QByteArray>
 #include <QString>
+
 class ConversationProtocol
 {
 public:
