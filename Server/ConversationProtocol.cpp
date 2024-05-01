@@ -65,8 +65,10 @@ void ConversationProtocol::loadData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_6_3);
-    in >> type;
+    qint8 _type;
+    in >> _type;
 
+    type = static_cast<MessageType>(_type);
     switch(type) {
     case TEXT_SENDING:
         in >> receiver >> message;
