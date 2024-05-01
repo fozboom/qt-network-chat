@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>709</width>
-    <height>483</height>
+    <width>710</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,13 +20,13 @@
       <x>20</x>
       <y>10</y>
       <width>661</width>
-      <height>421</height>
+      <height>431</height>
      </rect>
     </property>
     <property name="title">
      <string>Chat</string>
     </property>
-    <widget class="QWidget" name="">
+    <widget class="QWidget" name="layoutWidget">
      <property name="geometry">
       <rect>
        <x>10</x>
@@ -36,6 +36,31 @@
       </rect>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_2">
+          <property name="text">
+           <string>Receiver:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QComboBox" name="receiverBox">
+          <item>
+           <property name="text">
+            <string>Server</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>All</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item>
        <widget class="QLineEdit" name="userNameEdit">
         <property name="placeholderText">
@@ -84,7 +109,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>709</width>
+     <width>710</width>
      <height>27</height>
     </rect>
    </property>

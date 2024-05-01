@@ -31,7 +31,11 @@
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QTabWidget" name="tabChats"/>
+         <widget class="QTabWidget" name="tabChats">
+          <property name="tabsClosable">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
        </layout>
       </widget>

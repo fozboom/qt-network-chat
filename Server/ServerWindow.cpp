@@ -26,6 +26,8 @@ void ServerWindow::newClientConnected(QTcpSocket *client)
     connect(chatWindow, &ChatWindow::isTyping, [this](QString name) {
             this->statusBar()->showMessage(name, 800);
         });
+
+    connect(chatWindow, &ChatWindow::textForOtherClients, server, &ServerManager::onTextForOtherClients);
 }
 
 void ServerWindow::clientDisconnected(QTcpSocket *client)
@@ -34,11 +36,13 @@ void ServerWindow::clientDisconnected(QTcpSocket *client)
     ui->listClients->addItem(QString("Client with id %1 disconnected").arg(id));
 }
 
-void ServerWindow::setClientName(QString name)
+void ServerWindow::setClientName(QString prevName, QString name)
 {
     auto widget = qobject_cast<QWidget *>(sender());
     auto index = ui->tabChats->indexOf(widget);
     ui->tabChats->setTabText(index, name);
+
+    server->notifyAllClients(prevName, name);
 
 }
 
@@ -48,3 +52,12 @@ void ServerWindow::setupServerConfiguration()
     connect(server, &ServerManager::newClientConnected, this, &ServerWindow::newClientConnected);
     connect(server, &ServerManager::clientDisconnected, this, &ServerWindow::clientDisconnected);
 }
+
+void ServerWindow::on_tabChats_tabCloseRequested(int index)
+{
+    auto chatWindow = qobject_cast<ChatWindow *> (ui->tabChats->widget(index));
+
+    chatWindow->disconnect();
+    ui->tabChats->removeTab(index);
+}
+

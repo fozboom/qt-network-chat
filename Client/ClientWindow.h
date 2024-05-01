@@ -29,6 +29,11 @@ private slots:
 
     void on_userNameEdit_returnPressed();
 
+    void onConnectionACK(QString myName, QStringList clients);
+    void onNewClientConnectedToServer (QString name);
+    void onClientNameChanged(QString prevName, QString name);
+    void onClientDisconnected(QString name);
+
 private:
     Ui::ClientWindow *ui;
     ClientManager *client;
@@ -36,5 +41,6 @@ private:
 private:
     void createMessage(const QString &message, bool isMyMessage);
 
+    void setupClient();
 };
 #endif // CLIENTWINDOW_H

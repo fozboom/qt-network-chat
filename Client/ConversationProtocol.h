@@ -2,6 +2,7 @@
 #define CONVERSATIONPROTOCOL_H
 #include <QByteArray>
 #include <QString>
+#include <QStringList>
 class ConversationProtocol
 {
 public:
@@ -9,14 +10,21 @@ public:
         FILE_SENDING,
         NAME_SENDING,
         TEXT_SENDING,
-        USER_IS_TYPING
+        USER_IS_TYPING,
+        NAME_CHANGED,
+        CONNECTION_ACK,
+        NEW_CLIENT,
+        CLIENT_DISCONNECTED
     };
 
     ConversationProtocol();
     QByteArray serializeMessageData(MessageType type, QString message);
-    QByteArray sendTextMessage (QString message);
+
+
+    QByteArray sendTextMessage (QString message, QString receiver);
     QByteArray sendTypingIndicator ();
     QByteArray sendUserName (QString name);
+
 
     void loadData(QByteArray data);
 
@@ -29,10 +37,26 @@ public:
     MessageType getType() const;
     void setType(MessageType newType);
 
+    QString getReceiver() const;
+
+    QString getClientName() const;
+
+    QString getPrevName() const;
+
+    QString getMyName() const;
+
+    QStringList getClientNames() const;
+
 private:
     MessageType type;
     QString message;
     QString name;
+    QString receiver;
+    QString clientName;
+    QString prevName;
+    QString myName;
+    QStringList clientNames;
+
 
 };
 

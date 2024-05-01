@@ -22,7 +22,9 @@ public:
 private slots:
     void newClientConnected(QTcpSocket *client);
     void clientDisconnected(QTcpSocket *client);
-    void setClientName(QString name);
+    void setClientName(QString prevName, QString name);
+    void on_tabChats_tabCloseRequested(int index);
+
 private:
     Ui::ServerWindow *ui;
     ServerManager * server;

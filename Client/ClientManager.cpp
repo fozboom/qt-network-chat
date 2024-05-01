@@ -24,9 +24,9 @@ void ClientManager::connectToServer()
     }
 }
 
-void ClientManager::sendMessage(QString message)
+void ClientManager::sendMessage(QString message, QString receiver)
 {
-    socket->write(protocol.sendTextMessage(message));
+    socket->write(protocol.sendTextMessage(message, receiver));
 }
 
 void ClientManager::sendUserName(QString name)
@@ -43,6 +43,7 @@ void ClientManager::readyRead()
 {
     auto data = socket->readAll();
     protocol.loadData(data);
+    qDebug() << "Protocol type: " << protocol.getType();
     switch (protocol.getType()) {
     case ConversationProtocol::TEXT_SENDING:
         emit textMessageReceived(protocol.getMessage());
@@ -53,6 +54,19 @@ void ClientManager::readyRead()
     case ConversationProtocol::USER_IS_TYPING:
         emit isTyping();
         break;
+    case ConversationProtocol::CONNECTION_ACK:
+        emit connectionACK(protocol.getMyName(), protocol.getClientNames());
+        break;
+    case ConversationProtocol::NEW_CLIENT:
+        emit newClientConnectedToServer(protocol.getClientName());
+        break;
+    case ConversationProtocol::CLIENT_DISCONNECTED:
+        emit clientDisconnected(protocol.getClientName());
+        break;
+    case ConversationProtocol::NAME_CHANGED:
+        emit clientNameChanged(protocol.getPrevName(), protocol.getClientName());
+        break;
+
     default:
         break;
     }

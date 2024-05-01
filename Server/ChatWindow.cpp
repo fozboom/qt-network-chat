@@ -11,9 +11,14 @@ ChatWindow::ChatWindow(QTcpSocket * _client, QWidget *parent)
 
     connect(client, &ClientManager::disconnected, this, &ChatWindow::clientDisconnected);
     connect(client, &ClientManager::textMessageReceived, this, &ChatWindow::textMessageReceived);
-    connect(client, &ClientManager::userNameReceived, this, &ChatWindow::clientNameChanged);
+    connect(client, &ClientManager::nameChanged, this, &ChatWindow::onClientNameChanged);
     connect(client, &ClientManager::isTyping, this, &ChatWindow::onTyping);
     connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
+}
+
+void ChatWindow::disconnect()
+{
+    client->disconnectFromHost();
 }
 
 ChatWindow::~ChatWindow()
@@ -38,13 +43,25 @@ void ChatWindow::on_btnSend_clicked()
     ui->listMessages->addItem(message);
 }
 
-void ChatWindow::textMessageReceived(QString message)
+void ChatWindow::textMessageReceived(QString message, QString receiver)
 {
-    ui->listMessages->addItem(message);
+    if (receiver == "Server" || receiver == "All")
+    {
+        ui->listMessages->addItem(message);
+    }
+    else if (receiver != "Server")
+    {
+        emit textForOtherClients(message, receiver, client->name());
+    }
 }
 
 void ChatWindow::onTyping()
 {
     emit isTyping(QString("%1 is typing...").arg(client->name()));
+}
+
+void ChatWindow::onClientNameChanged(QString prevName, QString name)
+{
+    emit clientNameChanged(prevName, name);
 }
 

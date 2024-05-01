@@ -7,20 +7,82 @@ ServerManager::ServerManager(int portNumber, QObject *parent)
     startServer(portNumber);
 }
 
+void ServerManager::notifyAllClients(QString prevName, QString name)
+{
+    auto message = protocol.setClientNameMessage(prevName, name);
+    foreach(auto c, clients)
+    {
+        auto clientName = c->property("clientName").toString();
+        if (clientName != name)
+        {
+            c->write(message);
+        }
+    }
+}
+
+void ServerManager::onTextForOtherClients(QString message, QString receiver, QString sender)
+{
+    auto mes = protocol.sendTextMessage(message, receiver);
+    if (receiver == "All")
+    {
+        foreach(auto c, clients)
+        {
+            auto clientName = c->property("clientName").toString();
+            if (clientName != sender)
+            {
+                c->write(mes);
+            }
+        }
+    }
+    else
+    {
+        foreach(auto c, clients)
+        {
+            auto clientName = c->property("clientName").toString();
+            if (clientName == receiver)
+            {
+                c->write(mes);
+                return;
+            }
+        }
+    }
+}
+
 void ServerManager::newClientConnectionReceived()
 {
     auto client = server->nextPendingConnection();
-    clients << client;
-    auto id = clients.length();
-    connect(client, &QTcpSocket::disconnected, this, &ServerManager::clientConnectionAborted);
+
+    auto id = clients.count();
+    auto clientName = QString("Client %1").arg(id);
     client->setProperty("id", id);
+    client->setProperty("clientName", clientName);
+
+    connect(client, &QTcpSocket::disconnected, this, &ServerManager::clientConnectionAborted);
     emit newClientConnected(client);
+    if (id >= 0)
+    {
+        auto message = protocol.setConnectionAckMessage(clientName, clients.keys());
+        client->write(message);
+
+        auto newMessage = protocol.setNewClientMessage(clientName);
+
+        foreach (auto c, clients) {
+            c->write(newMessage);
+        }
+    }
+    clients[clientName] = client;
 }
 
 void ServerManager::clientConnectionAborted()
 {
     auto client = qobject_cast<QTcpSocket *>(sender());
-    clients.removeOne(client);
+    auto clientName = client->property("clientName").toString();
+    clients.remove(clientName);
+
+    auto message = protocol.setClientDisconnectedMessage(clientName);
+    foreach (auto c, clients) {
+        c->write(message);
+    }
     emit clientDisconnected(client);
 }
 
