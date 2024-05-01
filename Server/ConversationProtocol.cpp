@@ -8,7 +8,7 @@ QByteArray ConversationProtocol::serializeMessageData(MessageType messageType, Q
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_6_3);
+    dataStream.setVersion(QDataStream::Qt_5_0);
     dataStream << messageType << chatMessage;
     return serializedData;
 }
@@ -17,7 +17,7 @@ QByteArray ConversationProtocol::sendTextMessage(QString message, QString receiv
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_6_3);
+    dataStream.setVersion(QDataStream::Qt_5_0);
     dataStream << TEXT_SENDING << receiver << message;
     return serializedData;
 }
@@ -37,7 +37,7 @@ QByteArray ConversationProtocol::setClientNameMessage(QString previousName, QStr
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_6_3);
+    dataStream.setVersion(QDataStream::Qt_5_0);
     dataStream << NAME_CHANGED<< previousName << newName;
     return serializedData;
 }
@@ -46,7 +46,7 @@ QByteArray ConversationProtocol::setConnectionAckMessage(QString clientName, QSt
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_6_3);
+    dataStream.setVersion(QDataStream::Qt_5_0);
     dataStream << CONNECTION_ACK<< clientName << otherClients;
     return serializedData;
 }
@@ -64,7 +64,7 @@ QByteArray ConversationProtocol::setClientDisconnectedMessage(QString clientName
 void ConversationProtocol::loadData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
-    in.setVersion(QDataStream::Qt_6_3);
+    in.setVersion(QDataStream::Qt_5_0);
     qint8 _type;
     in >> _type;
 
