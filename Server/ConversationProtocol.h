@@ -19,7 +19,7 @@ public:
 
     ConversationProtocol();
     QByteArray serializeMessageData(MessageType type, QString message);
-    QByteArray sendTextMessage (QString message, QString receiver);
+    QByteArray sendTextMessage (QString message, QString receiver, QString sender);
     QByteArray sendTypingIndicator ();
     QByteArray sendUserName (QString name);
 

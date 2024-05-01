@@ -43,11 +43,11 @@ void ChatWindow::on_btnSend_clicked()
     ui->listMessages->addItem(message);
 }
 
-void ChatWindow::textMessageReceived(QString message, QString receiver)
+void ChatWindow::textMessageReceived(QString message, QString receiver, QString sender)
 {
     if (receiver == "Server" || receiver == "All")
     {
-        ui->listMessages->addItem(message);
+        ui->listMessages->addItem(QString("%1: %2").arg(sender, message));
     }
     else if (receiver != "Server")
     {

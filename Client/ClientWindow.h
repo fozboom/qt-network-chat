@@ -19,7 +19,7 @@ public:
     ~ClientWindow();
 
 private slots:
-    void dataReceived(QString message);
+    void dataReceived(QString sender, QString message);
 
     void on_btnSend_clicked();
 

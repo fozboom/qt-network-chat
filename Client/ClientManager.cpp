@@ -46,7 +46,7 @@ void ClientManager::readyRead()
     qDebug() << "Protocol type: " << protocol.getType();
     switch (protocol.getType()) {
     case ConversationProtocol::TEXT_SENDING:
-        emit textMessageReceived(protocol.getMessage());
+        emit textMessageReceived(protocol.getSender(),protocol.getMessage());
         break;
     case ConversationProtocol::NAME_SENDING:
         emit userNameReceived(protocol.getName());

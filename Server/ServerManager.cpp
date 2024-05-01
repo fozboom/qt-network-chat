@@ -22,7 +22,7 @@ void ServerManager::notifyAllClients(QString prevName, QString name)
 
 void ServerManager::onTextForOtherClients(QString message, QString receiver, QString sender)
 {
-    auto mes = protocol.sendTextMessage(message, receiver);
+    auto mes = protocol.sendTextMessage(message, receiver, sender);
     if (receiver == "All")
     {
         foreach(auto c, clients)

@@ -10,7 +10,7 @@ class ClientManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ClientManager(QHostAddress _ip = QHostAddress("195.181.246.125"), int _port = 8080, QObject *parent = nullptr);
+    explicit ClientManager(QHostAddress _ip = QHostAddress::LocalHost, int _port = 8080, QObject *parent = nullptr);
     void connectToServer();
 
 
@@ -23,7 +23,7 @@ signals:
     void disconnected();
     //void dataReceived(QByteArray data);
 
-    void textMessageReceived(QString message);
+    void textMessageReceived(QString sender, QString message);
     void isTyping();
     void userNameReceived(QString name);
 

@@ -21,9 +21,9 @@ ClientWindow::~ClientWindow()
 
 
 
-void ClientWindow::dataReceived(QString message)
+void ClientWindow::dataReceived(QString sender, QString message)
 {
-    createMessage(message, false);
+    createMessage(sender + ": " + message, false);
 }
 
 

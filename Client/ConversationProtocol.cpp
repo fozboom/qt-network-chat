@@ -41,7 +41,7 @@ void ConversationProtocol::loadData(QByteArray data)
     qDebug() << "loadData";
     switch(type) {
     case TEXT_SENDING:
-        in >> receiver >> message;
+        in >> sender >> receiver >> message;
         break;
     case NAME_SENDING:
         in >> name;
@@ -117,4 +117,9 @@ QString ConversationProtocol::getMyName() const
 QStringList ConversationProtocol::getClientNames() const
 {
     return clientNames;
+}
+
+QString ConversationProtocol::getSender() const
+{
+    return sender;
 }

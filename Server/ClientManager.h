@@ -10,7 +10,7 @@ class ClientManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ClientManager(QHostAddress _ip = QHostAddress("195.181.246.125"), int _port = 8080, QObject *parent = nullptr);
+    explicit ClientManager(QHostAddress _ip = QHostAddress::LocalHost, int _port = 8080, QObject *parent = nullptr);
     explicit ClientManager(QTcpSocket * _client, QObject *parent = nullptr);
     void connectToServer();
     void disconnectFromHost();
@@ -24,7 +24,7 @@ signals:
     void disconnected();
     //void dataReceived(QByteArray data);
 
-    void textMessageReceived(QString message, QString receiver);
+    void textMessageReceived(QString message, QString receiver, QString sender);
     void isTyping();
     void nameChanged(QString prevName, QString name);
 private slots:

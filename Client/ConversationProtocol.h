@@ -49,6 +49,8 @@ public:
 
     QStringList getClientNames() const;
 
+    QString getSender() const;
+
 private:
     MessageType type;
     QString message;
@@ -58,7 +60,7 @@ private:
     QString prevName;
     QString myName;
     QStringList clientNames;
-
+    QString sender;
 
 };
 

@@ -23,7 +23,7 @@ private slots:
 
     void on_btnSend_clicked();
 
-    void textMessageReceived(QString message, QString receiver);
+    void textMessageReceived(QString message, QString receiver, QString sender);
 
     void onTyping();
 

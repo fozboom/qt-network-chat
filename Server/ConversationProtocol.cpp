@@ -13,12 +13,12 @@ QByteArray ConversationProtocol::serializeMessageData(MessageType messageType, Q
     return serializedData;
 }
 
-QByteArray ConversationProtocol::sendTextMessage(QString message, QString receiver)
+QByteArray ConversationProtocol::sendTextMessage(QString message, QString receiver, QString sender)
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
     dataStream.setVersion(QDataStream::Qt_5_0);
-    dataStream << TEXT_SENDING << receiver << message;
+    dataStream << TEXT_SENDING << sender << receiver << message;
     return serializedData;
 }
 

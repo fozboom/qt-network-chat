@@ -40,7 +40,7 @@ void ClientManager::disconnectFromHost()
 
 void ClientManager::sendMessage(QString message)
 {
-    socket->write(protocol.sendTextMessage(message, name()));
+    socket->write(protocol.sendTextMessage(message, name(), "Server"));
 }
 
 void ClientManager::sendUserName(QString name)
@@ -66,7 +66,7 @@ void ClientManager::readyRead()
     protocol.loadData(data);
     switch (protocol.getType()) {
     case ConversationProtocol::TEXT_SENDING:
-        emit textMessageReceived(protocol.getMessage(), protocol.getReceiver());
+        emit textMessageReceived(protocol.getMessage(), protocol.getReceiver(), name());
         break;
     case ConversationProtocol::NAME_SENDING: {
         auto prevName = socket->property("clientName").toString();
