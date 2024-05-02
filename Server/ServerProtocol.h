@@ -7,11 +7,13 @@
 #include <QMap>
 
 enum MessageType {
-    USERNAME_UPDATE,
-    TEXT_MESSAGE,
-    TYPING_INDICATOR,
-    CONNECTION_ACKNOWLEDGED,
-    NEW_CLIENT_CONNECTED,
+    FILE_SENDING,
+    NAME_SENDING,
+    TEXT_SENDING,
+    USER_IS_TYPING,
+    NAME_CHANGED,
+    CONNECTION_ACK,
+    NEW_CLIENT,
     CLIENT_DISCONNECTED
 };
 
@@ -20,31 +22,31 @@ class ServerProtocol
 public:
 
 
-    QByteArray prepareMessageDataForSending(MessageType type, QString message, QString receiver, QString sender);
-    QByteArray prepareTextMessageForSending(QString message, QString receiver, QString sender);
-    QByteArray prepareTypingIndicatorForSending(QString sender);
-    QByteArray prepareUserNameForSending(QString name);
+    QByteArray serializeMessageData(MessageType type, QString message);
+    QByteArray sendTextMessage (QString message, QString receiver, QString sender);
+    QByteArray sendTypingIndicator ();
+    QByteArray sendUserName (QString name);
 
-    QByteArray createConnectionAcknowledgementMessage(QString clientName, QStringList otherClients);
-    QByteArray createNewClientConnectedMessage(QString clientName);
-    QByteArray createClientDisconnectedMessage(QString clientName);
+    QByteArray setClientNameMessage (QString previousName, QString newName);
+    QByteArray setConnectionAckMessage (QString clientName, QStringList otherClients);
+    QByteArray setNewClientMessage (QString clientName);
+    QByteArray setClientDisconnectedMessage (QString clientName);
 
-    void deserializeReceivedData(QByteArray data);
+    void loadData(QByteArray data);
 
     MessageType getMessageType() const;
     QString getChatMessage() const;
-    QString getUserName() const;
     QString getMessageReceiver() const;
 
-    QMap<QString, QStringList> getMessages() const;
+
+    QString getSenderName() const;
 
 private:
     MessageType messageType;
     QString chatMessage;
-    QString userName;
+    QString senderName;
     QString messageReceiver;
 
-    QMap<QString, QStringList> messages;
 };
 
 #endif // SERVERPROTOCOL_H

@@ -17,7 +17,7 @@ class ClientWindow : public QMainWindow
 public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
-
+    void connectToServer();
     void processAndSendMessage();
 
 private slots:

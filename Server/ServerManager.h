@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include "ConversationProtocol.h"
+#include "ServerProtocol.h"
 
 class ServerManager : public QObject
 {
@@ -11,7 +11,7 @@ class ServerManager : public QObject
 public:
     explicit ServerManager(int portNumber = 8080, QObject *parent = nullptr);
     void disconnectClient(QTcpSocket *client, const QString& reason);
-
+    QString getCurrentUserName();
 public slots:
     void onMessageForClients(QString message, QString receiver, QString sender);
 signals:
@@ -21,10 +21,11 @@ signals:
 private slots:
     void onNewClientConnected();
     void onClientDisconnected();
+
 private:
     QTcpServer * server;
     QMap <QString, QTcpSocket *> clients;
-    ConversationProtocol protocol;
+    ServerProtocol protocol;
 private:
     void startServer(int portNumber);
 

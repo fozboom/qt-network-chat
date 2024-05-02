@@ -12,12 +12,16 @@ ClientWindow::ClientWindow(QWidget *parent)
     ui->btnSend->setEnabled(false);
     ui->editMessage->setEnabled(false);
     setupClient();
-    client->connectToServer();
 }
 
 ClientWindow::~ClientWindow()
 {
     delete ui;
+}
+
+void ClientWindow::connectToServer()
+{
+    client->connectToServer();
 }
 
 

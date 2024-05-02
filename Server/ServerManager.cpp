@@ -10,7 +10,7 @@ ServerManager::ServerManager(int portNumber, QObject *parent)
 
 void ServerManager::onMessageForClients(QString message, QString receiver, QString sender)
 {
-    auto mes = protocol.prepareTextMessageForSending(message, receiver, sender);
+    auto mes = protocol.sendTextMessage(message, receiver, sender);
 
     foreach(auto c, clients)
     {
@@ -36,17 +36,16 @@ void ServerManager::onNewClientConnected()
     emit newClientConnected(client);
     if (id >= 0)
     {
-        auto message = protocol.createClientDisconnectedMessage(clientName);
+        auto message = protocol.setConnectionAckMessage(clientName, clients.keys());
         client->write(message);
 
-        auto newMessage = protocol.createNewClientConnectedMessage(clientName);
+        auto newMessage = protocol.setNewClientMessage(clientName);
 
         foreach (auto c, clients) {
             c->write(newMessage);
         }
     }
     clients[clientName] = client;
-
 }
 
 void ServerManager::onClientDisconnected()
@@ -55,11 +54,16 @@ void ServerManager::onClientDisconnected()
     auto clientName = client->property("clientName").toString();
     clients.remove(clientName);
 
-    auto message = protocol.createClientDisconnectedMessage(clientName);
+    auto message = protocol.setClientDisconnectedMessage(clientName);
     foreach (auto c, clients) {
         c->write(message);
     }
     emit clientDisconnected(client);
+}
+
+QString ServerManager::getCurrentUserName()
+{
+    return protocol.getSenderName();
 }
 
 
@@ -73,6 +77,8 @@ void ServerManager::startServer(int portNumber)
 
 void ServerManager::disconnectClient(QTcpSocket *client, const QString &reason)
 {
-    auto message = protocol.prepareTextMessageForSending(reason, client->property("clientName").toString(), "Server");
+    auto message = protocol.sendTextMessage(reason, client->property("clientName").toString(), "Server");
     client->write(message);
 }
+
+#include "moc_ServerManager.cpp"

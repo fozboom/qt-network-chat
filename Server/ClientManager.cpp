@@ -40,20 +40,20 @@ void ClientManager::disconnectFromHost()
 
 void ClientManager::sendMessage(QString message)
 {
-    socket->write(protocol.prepareTextMessageForSending(message, name(), "Server"));
+    socket->write(protocol.sendTextMessage(message, name(), "Server"));
 }
 
 
 
 void ClientManager::sendIsTypingIndicator()
 {
-    socket->write(protocol.prepareTypingIndicatorForSending("Server"));
+    socket->write(protocol.sendTypingIndicator());
 }
 
 QString ClientManager::name() const
 {
     auto id = socket->property("id").toInt();
-    auto name = protocol.getUserName().length() > 0 ? protocol.getUserName() : QString("Client (%1)").arg(id);
+    auto name = protocol.getSenderName().length() > 0 ? protocol.getSenderName() : QString("Cli (%1)").arg(id);
     return name;
 }
 
@@ -65,12 +65,12 @@ QTcpSocket *ClientManager::getClient() const
 void ClientManager::readDataFromSocket()
 {
     auto data = socket->readAll();
-    protocol.deserializeReceivedData(data);
+    protocol.loadData(data);
     switch (protocol.getMessageType()) {
-    case TEXT_MESSAGE:
+    case TEXT_SENDING:
         emit receivedTextMessageFromSender(protocol.getChatMessage(), protocol.getMessageReceiver(), name());
         break;
-    case TYPING_INDICATOR:
+    case USER_IS_TYPING:
         emit userIsTyping();
         break;
     default:

@@ -17,30 +17,25 @@ ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
 void ClientManager::connectToServer()
 {
     socket->connectToHost(ip, port);
-    if (socket->waitForConnected(3000)) {
-        auto message = protocol.prepareConnectionMessage(userName);
-        protocol.setCurrentUserName(userName);
-        socket->write(message);
-        qDebug() << "Connected";
-    } else {
-        qDebug() << "Connection failed: " << socket->errorString();
-    }
+    protocol.setCurrentUserName(userName);
+    socket->write(protocol.sendUserName(userName));
+    qDebug() << "Connected";
 }
 
 void ClientManager::sendMessage(QString message, QString receiver)
 {
-    socket->write(protocol.prepareTextMessageForSending(message, receiver, userName));
+    socket->write(protocol.sendTextMessage(message, receiver));
 }
 
 void ClientManager::sendUserName(QString name)
 {
-    socket->write(protocol.prepareUserNameSending(name));
+    socket->write(protocol.sendUserName(name));
 }
 
 
 void ClientManager::sendIsTypingIndicator()
 {
-    socket->write(protocol.prepareTypingIndicatorForSending(userName));
+    socket->write(protocol.sendTypingIndicator());
 }
 
 
@@ -48,18 +43,18 @@ void ClientManager::sendIsTypingIndicator()
 void ClientManager::readDataFromSocket()
 {
     auto data = socket->readAll();
-    protocol.deserializeReceivedData(data);
+    protocol.loadData(data);
     switch (protocol.getLastReceivedType()) {
-    case TEXT_MESSAGE:
+    case TEXT_SENDING:
         emit receivedTextMessageFromSender(protocol.getMessageSender(),protocol.getLastReceivedMessage());
         break;
-    case TYPING_INDICATOR:
+    case USER_IS_TYPING:
         emit userIsTyping();
         break;
-    case CONNECTION_ACKNOWLEDGED:
+    case CONNECTION_ACK:
         emit connectionAcknowledged(protocol.getCurrentUserName(), protocol.getConnectedClients());
         break;
-    case NEW_CLIENT_CONNECTED:
+    case NEW_CLIENT:
         emit newClientConnectedToServer(userName);
         break;
     case CLIENT_DISCONNECTED:

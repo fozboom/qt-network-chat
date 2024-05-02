@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(&login, &LoginWindow::loginSuccessful, [&]() {
         login.close();
+        client.connectToServer();
         client.show();
     });
     QObject::connect(&a, &QApplication::aboutToQuit, [&]() {

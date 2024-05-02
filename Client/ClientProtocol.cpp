@@ -1,71 +1,60 @@
 #include "ClientProtocol.h"
-#include <QJsonArray>
+#include <QIODevice>
+#include <QDebug>
 
-QByteArray ClientProtocol::prepareMessageDataForSending(MessageType messageType, QString chatMessage, QString receiver, QString sender)
+QByteArray ClientProtocol::serializeMessageData(MessageType messageType, QString chatMessage)
 {
-    QJsonObject message;
-    message["type"] = static_cast<int>(messageType);
-    message["content"] = chatMessage;
-    message["receiver"] = receiver;
-    message["sender"] = sender;
-    return QJsonDocument(message).toJson(QJsonDocument::Compact);
+    QByteArray serializedData;
+    QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
+    dataStream.setVersion(QDataStream::Qt_5_0);
+    dataStream << messageType << chatMessage;
+    return serializedData;
 }
 
-QByteArray ClientProtocol::prepareTextMessageForSending(QString message, QString receiver, QString sender)
+QByteArray ClientProtocol::sendTextMessage (QString message, QString receiver)
 {
-    return prepareMessageDataForSending(TEXT_MESSAGE, message, receiver, sender);
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_0);
+    out << TEXT_SENDING << receiver << message;
+    return ba;
 }
 
-QByteArray ClientProtocol::prepareTypingIndicatorForSending(QString sender)
+
+QByteArray ClientProtocol::sendTypingIndicator()
 {
-    return prepareMessageDataForSending(TYPING_INDICATOR, "", "", sender);
+    return serializeMessageData(USER_IS_TYPING, "");
 }
 
-QByteArray ClientProtocol::prepareConnectionMessage(QString userName)
+QByteArray ClientProtocol::sendUserName(QString name)
 {
-    QJsonObject message;
-    message["type"] = static_cast<int>(CONNECTION_ACKNOWLEDGED);
-    message["currentUserName"] = userName;
-    return QJsonDocument(message).toJson(QJsonDocument::Compact);
+    return serializeMessageData(NAME_SENDING, name);
 }
 
-QByteArray ClientProtocol::prepareDisconnectionMessage(QString userName)
+void ClientProtocol::loadData(QByteArray data)
 {
-    QJsonObject message;
-    message["type"] = static_cast<int>(CLIENT_DISCONNECTED);
-    message["disconnectedClientName"] = userName;
-    return QJsonDocument(message).toJson(QJsonDocument::Compact);
-}
-
-QByteArray ClientProtocol::prepareUserNameSending(QString userName)
-{
-    QJsonObject message;
-    message["type"] = static_cast<int>(USER_NAME);
-    message["userName"] = userName;
-    return QJsonDocument(message).toJson(QJsonDocument::Compact);
-}
-
-void ClientProtocol::deserializeReceivedData(QByteArray data)
-{
-    QJsonObject json = QJsonDocument::fromJson(data).object();
-    MessageType type = static_cast<MessageType>(json["type"].toInt());
-    lastReceivedType = type;
-    switch(type) {
-    case TEXT_MESSAGE:
-        lastReceivedMessage = json["content"].toString();
-        messageReceiver = json["receiver"].toString();
-        messageSender = json["sender"].toString();
+    QDataStream in(&data, QIODevice::ReadOnly);
+    in.setVersion(QDataStream::Qt_5_0);
+    in >> lastReceivedType;
+    qDebug() << "loadData";
+    switch(lastReceivedType) {
+    case TEXT_SENDING:
+        in >> messageSender >> lastReceivedMessage >> lastReceivedMessage;
         break;
-    case CONNECTION_ACKNOWLEDGED:
-        currentUserName = json["currentUserName"].toString();
-        connectedClients = json["connectedClients"].toString().split(",");
+    case NAME_SENDING:
+        in >> messageSender;
         break;
-    case NEW_CLIENT_CONNECTED:
-        lastConnectedClientName = json["connectedClientName"].toString();
+           break;
+    case CONNECTION_ACK:
+        in >> currentUserName >> connectedClients;
+        break;
+    case NEW_CLIENT:
+        in >> currentUserName;
         break;
     case CLIENT_DISCONNECTED:
-        lastDisconnectedClientName= json["disconnectedClientName"].toString();
+        in >> currentUserName;
         break;
+
     default:
         break;
     }

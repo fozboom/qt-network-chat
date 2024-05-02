@@ -6,28 +6,27 @@
 #include <QJsonArray>
 
 enum MessageType {
-    TEXT_MESSAGE,
-    USER_NAME,
-    TYPING_INDICATOR,
-    CONNECTION_ACKNOWLEDGED,
-    NEW_CLIENT_CONNECTED,
+    FILE_SENDING,
+    NAME_SENDING,
+    TEXT_SENDING,
+    USER_IS_TYPING,
+    NAME_CHANGED,
+    CONNECTION_ACK,
+    NEW_CLIENT,
     CLIENT_DISCONNECTED
 };
 
 class ClientProtocol {
 public:
 
-    QByteArray prepareMessage(MessageType type, const QString& content);
-    void processMessage(const QByteArray& message);
+    QByteArray serializeMessageData(MessageType type, QString message);
 
-    QByteArray prepareMessageDataForSending(MessageType messageType, QString chatMessage, QString receiver, QString sender);
-    QByteArray prepareTextMessageForSending(QString message, QString receiver, QString sender);
-    QByteArray prepareTypingIndicatorForSending(QString sender);
-    QByteArray prepareConnectionMessage(QString userName);
-    QByteArray prepareDisconnectionMessage(QString userName);
-    QByteArray prepareUserNameSending(QString userName);
-    void deserializeReceivedData(QByteArray data);
+    QByteArray sendTextMessage (QString message, QString receiver);
+    QByteArray sendTypingIndicator ();
+    QByteArray sendUserName (QString name);
 
+
+    void loadData(QByteArray data);
     MessageType getLastReceivedType() const;
     QString getLastReceivedMessage() const;
     QString getMessageSender() const;
