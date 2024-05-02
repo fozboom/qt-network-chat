@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 
     QObject::connect(&login, &LoginWindow::loginSuccessful, [&]() {
         login.close();
+        client.updateAndSendUserName(login.getNickname());
         client.connectToServer();
         client.show();
     });
@@ -19,7 +20,6 @@ int main(int argc, char *argv[])
         qDebug() << "removeNickname";
         login.removeNickname(login.getNickname());
     });
-    QObject::connect(&login, &LoginWindow::userNameEntered, &client, &ClientWindow::updateAndSendUserName);
 
     login.show();
 

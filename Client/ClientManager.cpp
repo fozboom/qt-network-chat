@@ -19,7 +19,8 @@ void ClientManager::connectToServer()
     socket->connectToHost(ip, port);
     protocol.setCurrentUserName(userName);
     socket->write(protocol.sendUserName(userName));
-    qDebug() << "Connected";
+
+    qDebug() << "Connected send name - " << userName;
 }
 
 void ClientManager::sendMessage(QString message, QString receiver)

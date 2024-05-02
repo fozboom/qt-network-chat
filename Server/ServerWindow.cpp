@@ -21,7 +21,7 @@ void ServerWindow::newClientConnected(QTcpSocket *client)
     auto chatWindow = new ChatWindow(client);
     ui->tabChats->addTab(chatWindow, server->getCurrentUserName() + "ZY");
 
-
+    connect(chatWindow, &ChatWindow::sendClientNameToTabWindow, this, &ServerWindow::setClientName);
     connect(chatWindow, &ChatWindow::typingStatusChanged, [this](QString name) {
             this->statusBar()->showMessage(name, 800);
         });
@@ -49,5 +49,12 @@ void ServerWindow::on_tabChats_tabCloseRequested(int index)
     server->disconnectClient(chatWindow->getClient(), "You have been disconnected by the server.");
     chatWindow->disconnectClient();
     ui->tabChats->removeTab(index);
+}
+
+void ServerWindow::setClientName(QString name)
+{
+    auto widget = qobject_cast<QWidget *>(sender());
+    auto index = ui->tabChats->indexOf(widget);
+    ui->tabChats->setTabText(index, name);
 }
 

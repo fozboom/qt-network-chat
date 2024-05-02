@@ -141,6 +141,5 @@ void ClientWindow::on_editMessage_returnPressed()
 void ClientWindow::updateAndSendUserName(const QString &name)
 {
     client->updateUserName(name);
-    client->sendUserName(name);
 }
 

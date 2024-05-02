@@ -9,6 +9,7 @@ ChatWindow::ChatWindow(QTcpSocket * _client, QWidget *parent)
     ui->setupUi(this);
     client = new ClientManager(_client, this);
 
+    connect(client, &ClientManager::sendClientName, this, &ChatWindow::onSendName);
     connect(client, &ClientManager::clientDisconnectedFromServer, this, &ChatWindow::onClientDisconnected);
     connect(client, &ClientManager::receivedTextMessageFromSender, this, &ChatWindow::onMessageReceived);
     connect(client, &ClientManager::userIsTyping, this, &ChatWindow::onTypingIndicatorReceived);
@@ -62,5 +63,10 @@ void ChatWindow::onMessageReceived(QString message, QString receiver, QString se
 void ChatWindow::onTypingIndicatorReceived()
 {
     emit typingStatusChanged(QString("%1 is typing...").arg(client->name()));
+}
+
+void ChatWindow::onSendName(QString name)
+{
+    emit sendClientNameToTabWindow(name);
 }
 

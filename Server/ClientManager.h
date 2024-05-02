@@ -23,6 +23,7 @@ signals:
     void clientConnectedToServer();
     void clientDisconnectedFromServer();
     void receivedTextMessageFromSender(QString message, QString receiver, QString sender);
+    void sendClientName(QString name);
     void userIsTyping();
 private slots:
     void readDataFromSocket();

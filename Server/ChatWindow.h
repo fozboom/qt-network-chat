@@ -23,10 +23,11 @@ private slots:
     void on_btnSend_clicked();
     void onMessageReceived(QString message, QString receiver, QString sender);
     void onTypingIndicatorReceived();
+    void onSendName(QString name);
 signals:
     void typingStatusChanged (QString message);
     void newMessageToBroadcast(QString message, QString receiver, QString sender);
-
+    void sendClientNameToTabWindow(QString name);
 
 private:
     Ui::ChatWindow *ui;

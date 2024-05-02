@@ -75,7 +75,7 @@ void ServerProtocol::loadData(QByteArray data)
         in >> messageReceiver >> chatMessage;
         break;
     case NAME_SENDING:
-        in >> senderName;
+        in >> currentName;
     default:
         break;
     }
@@ -101,4 +101,9 @@ QString ServerProtocol::getMessageReceiver() const
 QString ServerProtocol::getSenderName() const
 {
     return senderName;
+}
+
+QString ServerProtocol::getCurrentName() const
+{
+    return currentName;
 }

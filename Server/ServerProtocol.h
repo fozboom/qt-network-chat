@@ -41,11 +41,14 @@ public:
 
     QString getSenderName() const;
 
+    QString getCurrentName() const;
+
 private:
     MessageType messageType;
     QString chatMessage;
     QString senderName;
     QString messageReceiver;
+    QString currentName;
 
 };
 

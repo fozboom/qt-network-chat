@@ -26,11 +26,6 @@ ClientManager::ClientManager(QTcpSocket *_client, QObject *parent)
 void ClientManager::connectToServer()
 {
     socket->connectToHost(ip, port);
-    if (socket->waitForConnected(3000)) {
-        qDebug() << "Connected";
-    } else {
-        qDebug() << "Connection failed: " << socket->errorString();
-    }
 }
 
 void ClientManager::disconnectFromHost()
@@ -52,8 +47,7 @@ void ClientManager::sendIsTypingIndicator()
 
 QString ClientManager::name() const
 {
-    auto id = socket->property("id").toInt();
-    auto name = protocol.getSenderName().length() > 0 ? protocol.getSenderName() : QString("Cli (%1)").arg(id);
+    auto name = protocol.getCurrentName();
     return name;
 }
 
@@ -73,6 +67,8 @@ void ClientManager::readDataFromSocket()
     case USER_IS_TYPING:
         emit userIsTyping();
         break;
+    case NAME_SENDING:
+        emit sendClientName(protocol.getCurrentName());
     default:
         break;
     }

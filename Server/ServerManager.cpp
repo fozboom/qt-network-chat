@@ -63,7 +63,7 @@ void ServerManager::onClientDisconnected()
 
 QString ServerManager::getCurrentUserName()
 {
-    return protocol.getSenderName();
+    return protocol.getCurrentName();
 }
 
 
