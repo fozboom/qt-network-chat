@@ -22,6 +22,7 @@ public:
 
 signals:
     void loginSuccessful();
+    void userNameEntered(const QString& name);
 
 private slots:
 
@@ -33,8 +34,8 @@ private:
     QSqlDatabase db;
     QString nickName;
 
-    void createDatabase();
-    bool isNicknameTaken(const QString &nickname);
+    void setupDatabase();
+    bool doesNicknameExist(const QString &nickname);
     void addNickname(const QString &nickname);
 };
 

@@ -18,29 +18,24 @@ public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
 
+    void processAndSendMessage();
+
 private slots:
-    void dataReceived(QString sender, QString message);
-
+    void onMessageReceived(QString sender, QString message);
     void on_btnSend_clicked();
-
-    void on_actionConnect_triggered();
-
-    void actionOnTypingIndicator();
-
-    void on_userNameEdit_returnPressed();
-
-    void onConnectionACK(QString myName, QStringList clients);
+    void onTypingIndicatorReceived();
+    void onConnectionAcknowledged(QString myName, QStringList clients);
     void onNewClientConnectedToServer (QString name);
-    void onClientNameChanged(QString prevName, QString name);
-    void onClientDisconnected(QString name);
-
+    void onClientDisconnectedFromServer(QString name);
+    void on_editMessage_returnPressed();
+public slots:
+    void updateAndSendUserName(const QString& name);
 private:
     Ui::ClientWindow *ui;
     ClientManager *client;
 
 private:
     void createMessage(const QString &message, bool isMyMessage);
-
     void setupClient();
 };
 #endif // CLIENTWINDOW_H

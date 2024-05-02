@@ -13,6 +13,7 @@ SOURCES += \
     ClientManager.cpp \
     ConversationProtocol.cpp \
     ServerManager.cpp \
+    ServerProtocol.cpp \
     ServerWindow.cpp \
     server_main.cpp
 
@@ -21,6 +22,7 @@ HEADERS += \
     ClientManager.h \
     ConversationProtocol.h \
     ServerManager.h \
+    ServerProtocol.h \
     ServerWindow.h
 
 FORMS += \

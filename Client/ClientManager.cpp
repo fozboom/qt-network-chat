@@ -7,9 +7,9 @@ ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
     , port(_port)
 {
     socket = new QTcpSocket(this);
-    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
-    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
-    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::clientConnectedToSever);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::clientDisconnectedFromServer);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readDataFromSocket);
 }
 
 
@@ -18,6 +18,9 @@ void ClientManager::connectToServer()
 {
     socket->connectToHost(ip, port);
     if (socket->waitForConnected(3000)) {
+        auto message = protocol.prepareConnectionMessage(userName);
+        protocol.setCurrentUserName(userName);
+        socket->write(message);
         qDebug() << "Connected";
     } else {
         qDebug() << "Connection failed: " << socket->errorString();
@@ -26,48 +29,50 @@ void ClientManager::connectToServer()
 
 void ClientManager::sendMessage(QString message, QString receiver)
 {
-    socket->write(protocol.sendTextMessage(message, receiver));
+    socket->write(protocol.prepareTextMessageForSending(message, receiver, userName));
 }
 
 void ClientManager::sendUserName(QString name)
 {
-    socket->write(protocol.sendUserName(name));
+    socket->write(protocol.prepareUserNameSending(name));
 }
+
 
 void ClientManager::sendIsTypingIndicator()
 {
-    socket->write(protocol.sendTypingIndicator());
+    socket->write(protocol.prepareTypingIndicatorForSending(userName));
 }
 
-void ClientManager::readyRead()
+
+
+void ClientManager::readDataFromSocket()
 {
     auto data = socket->readAll();
-    protocol.loadData(data);
-    qDebug() << "Protocol type: " << protocol.getType();
-    switch (protocol.getType()) {
-    case ConversationProtocol::TEXT_SENDING:
-        emit textMessageReceived(protocol.getSender(),protocol.getMessage());
+    protocol.deserializeReceivedData(data);
+    switch (protocol.getLastReceivedType()) {
+    case TEXT_MESSAGE:
+        emit receivedTextMessageFromSender(protocol.getMessageSender(),protocol.getLastReceivedMessage());
         break;
-    case ConversationProtocol::NAME_SENDING:
-        emit userNameReceived(protocol.getName());
+    case TYPING_INDICATOR:
+        emit userIsTyping();
         break;
-    case ConversationProtocol::USER_IS_TYPING:
-        emit isTyping();
+    case CONNECTION_ACKNOWLEDGED:
+        emit connectionAcknowledged(protocol.getCurrentUserName(), protocol.getConnectedClients());
         break;
-    case ConversationProtocol::CONNECTION_ACK:
-        emit connectionACK(protocol.getMyName(), protocol.getClientNames());
+    case NEW_CLIENT_CONNECTED:
+        emit newClientConnectedToServer(userName);
         break;
-    case ConversationProtocol::NEW_CLIENT:
-        emit newClientConnectedToServer(protocol.getClientName());
+    case CLIENT_DISCONNECTED:
+        emit clientDisconnected(protocol.getCurrentUserName());
         break;
-    case ConversationProtocol::CLIENT_DISCONNECTED:
-        emit clientDisconnected(protocol.getClientName());
-        break;
-    case ConversationProtocol::NAME_CHANGED:
-        emit clientNameChanged(protocol.getPrevName(), protocol.getClientName());
-        break;
+
 
     default:
         break;
     }
+}
+
+void ClientManager::updateUserName(const QString &name)
+{
+    userName = name;
 }

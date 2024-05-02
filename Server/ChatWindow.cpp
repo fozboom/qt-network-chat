@@ -9,14 +9,13 @@ ChatWindow::ChatWindow(QTcpSocket * _client, QWidget *parent)
     ui->setupUi(this);
     client = new ClientManager(_client, this);
 
-    connect(client, &ClientManager::disconnected, this, &ChatWindow::clientDisconnected);
-    connect(client, &ClientManager::textMessageReceived, this, &ChatWindow::textMessageReceived);
-    connect(client, &ClientManager::nameChanged, this, &ChatWindow::onClientNameChanged);
-    connect(client, &ClientManager::isTyping, this, &ChatWindow::onTyping);
+    connect(client, &ClientManager::clientDisconnectedFromServer, this, &ChatWindow::onClientDisconnected);
+    connect(client, &ClientManager::receivedTextMessageFromSender, this, &ChatWindow::onMessageReceived);
+    connect(client, &ClientManager::userIsTyping, this, &ChatWindow::onTypingIndicatorReceived);
     connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
 }
 
-void ChatWindow::disconnect()
+void ChatWindow::disconnectClient()
 {
     client->disconnectFromHost();
 }
@@ -32,7 +31,7 @@ QTcpSocket *ChatWindow::getClient() const
 }
 
 
-void ChatWindow::clientDisconnected()
+void ChatWindow::onClientDisconnected()
 {
     ui->btnSend->setEnabled(false);
     ui->editMessage->setEnabled(false);
@@ -48,7 +47,7 @@ void ChatWindow::on_btnSend_clicked()
     ui->listMessages->addItem(message);
 }
 
-void ChatWindow::textMessageReceived(QString message, QString receiver, QString sender)
+void ChatWindow::onMessageReceived(QString message, QString receiver, QString sender)
 {
     if (receiver == "Server")
     {
@@ -56,17 +55,12 @@ void ChatWindow::textMessageReceived(QString message, QString receiver, QString 
     }
     else
     {
-        emit textForOtherClients(message, receiver, client->name());
+        emit newMessageToBroadcast(message, receiver, client->name());
     }
 }
 
-void ChatWindow::onTyping()
+void ChatWindow::onTypingIndicatorReceived()
 {
-    emit isTyping(QString("%1 is typing...").arg(client->name()));
-}
-
-void ChatWindow::onClientNameChanged(QString prevName, QString name)
-{
-    emit clientNameChanged(prevName, name);
+    emit typingStatusChanged(QString("%1 is typing...").arg(client->name()));
 }
 

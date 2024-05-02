@@ -15,24 +15,17 @@ class ChatWindow : public QWidget
 
 public:
     explicit ChatWindow(QTcpSocket * _client, QWidget *parent = nullptr);
-    void disconnect();
+    void disconnectClient();
     ~ChatWindow();
     QTcpSocket* getClient() const;
 private slots:
-
-    void clientDisconnected();
-
+    void onClientDisconnected();
     void on_btnSend_clicked();
-
-    void textMessageReceived(QString message, QString receiver, QString sender);
-
-    void onTyping();
-
-    void onClientNameChanged(QString prevName, QString name);
+    void onMessageReceived(QString message, QString receiver, QString sender);
+    void onTypingIndicatorReceived();
 signals:
-    void clientNameChanged(QString prevName, QString name);
-    void isTyping (QString message);
-    void textForOtherClients(QString message, QString receiver, QString sender);
+    void typingStatusChanged (QString message);
+    void newMessageToBroadcast(QString message, QString receiver, QString sender);
 
 
 private:

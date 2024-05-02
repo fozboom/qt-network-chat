@@ -7,18 +7,18 @@ ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
     , port(_port)
 {
     socket = new QTcpSocket(this);
-    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
-    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
-    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::clientConnectedToServer);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::clientDisconnectedFromServer);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readDataFromSocket);
 }
 
 ClientManager::ClientManager(QTcpSocket *_client, QObject *parent)
     : QObject{parent}
     , socket(_client)
 {
-    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
-    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
-    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::clientConnectedToServer);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::clientDisconnectedFromServer);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readDataFromSocket);
 }
 
 
@@ -40,23 +40,20 @@ void ClientManager::disconnectFromHost()
 
 void ClientManager::sendMessage(QString message)
 {
-    socket->write(protocol.sendTextMessage(message, name(), "Server"));
+    socket->write(protocol.prepareTextMessageForSending(message, name(), "Server"));
 }
 
-void ClientManager::sendUserName(QString name)
-{
-    socket->write(protocol.sendUserName(name));
-}
+
 
 void ClientManager::sendIsTypingIndicator()
 {
-    socket->write(protocol.sendTypingIndicator());
+    socket->write(protocol.prepareTypingIndicatorForSending("Server"));
 }
 
 QString ClientManager::name() const
 {
     auto id = socket->property("id").toInt();
-    auto name = protocol.getName().length() > 0 ? protocol.getName() : QString("Client (%1)").arg(id);
+    auto name = protocol.getUserName().length() > 0 ? protocol.getUserName() : QString("Client (%1)").arg(id);
     return name;
 }
 
@@ -65,22 +62,16 @@ QTcpSocket *ClientManager::getClient() const
     return socket;
 }
 
-void ClientManager::readyRead()
+void ClientManager::readDataFromSocket()
 {
     auto data = socket->readAll();
-    protocol.loadData(data);
-    switch (protocol.getType()) {
-    case ConversationProtocol::TEXT_SENDING:
-        emit textMessageReceived(protocol.getMessage(), protocol.getReceiver(), name());
+    protocol.deserializeReceivedData(data);
+    switch (protocol.getMessageType()) {
+    case TEXT_MESSAGE:
+        emit receivedTextMessageFromSender(protocol.getChatMessage(), protocol.getMessageReceiver(), name());
         break;
-    case ConversationProtocol::NAME_SENDING: {
-        auto prevName = socket->property("clientName").toString();
-        socket->setProperty("clientName", name());
-        emit nameChanged(prevName, name());
-        break;
-    }
-    case ConversationProtocol::USER_IS_TYPING:
-        emit isTyping();
+    case TYPING_INDICATOR:
+        emit userIsTyping();
         break;
     default:
         break;

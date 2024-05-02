@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
         qDebug() << "removeNickname";
         login.removeNickname(login.getNickname());
     });
+    QObject::connect(&login, &LoginWindow::userNameEntered, &client, &ClientWindow::updateAndSendUserName);
 
     login.show();
 

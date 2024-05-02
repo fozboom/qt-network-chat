@@ -7,45 +7,41 @@ class ConversationProtocol
 {
 public:
     enum MessageType {
-        FILE_SENDING,
-        NAME_SENDING,
-        TEXT_SENDING,
-        USER_IS_TYPING,
-        NAME_CHANGED,
-        CONNECTION_ACK,
-        NEW_CLIENT,
+        USERNAME_UPDATE,
+        TEXT_MESSAGE,
+        TYPING_INDICATOR,
+        CONNECTION_ACKNOWLEDGED,
+        NEW_CLIENT_CONNECTED,
         CLIENT_DISCONNECTED
     };
 
     ConversationProtocol();
-    QByteArray serializeMessageData(MessageType type, QString message);
-    QByteArray sendTextMessage (QString message, QString receiver, QString sender);
-    QByteArray sendTypingIndicator ();
-    QByteArray sendUserName (QString name);
+    QByteArray prepareMessageDataForSending(MessageType type, QString message);
+    QByteArray prepareTextMessageForSending (QString message, QString receiver, QString sender);
+    QByteArray prepareTypingIndicatorForSending ();
+    QByteArray prepareUserNameForSending (QString name);
 
-    QByteArray setClientNameMessage (QString previousName, QString newName);
-    QByteArray setConnectionAckMessage (QString clientName, QStringList otherClients);
-    QByteArray setNewClientMessage (QString clientName);
-    QByteArray setClientDisconnectedMessage (QString clientName);
+    QByteArray createConnectionAcknowledgementMessage(QString clientName, QStringList otherClients);
+    QByteArray createNewClientConnectedMessage (QString clientName);
+    QByteArray createClientDisconnectedMessage (QString clientName);
 
-    void loadData(QByteArray data);
+    void deserializeReceivedData(QByteArray data);
 
-    QString getName() const;
-    void setName(const QString &newName);
 
-    QString getMessage() const;
-    void setMessage(const QString &newMessage);
-
-    MessageType getType() const;
-    void setType(MessageType newType);
-
-    QString getReceiver() const;
+    MessageType getMessageType() const;
+    void setMessageType(MessageType newMessageType);
+    QString getChatMessage() const;
+    void setChatMessage(const QString &newChatMessage);
+    QString getUserName() const;
+    void setUserName(const QString &newUserName);
+    QString getMessageReceiver() const;
+    void setMessageReceiver(const QString &newMessageReceiver);
 
 private:
-    MessageType type;
-    QString message;
-    QString name;
-    QString receiver;
+    MessageType messageType;
+    QString chatMessage;
+    QString userName;
+    QString messageReceiver;
 
 };
 

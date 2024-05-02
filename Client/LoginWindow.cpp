@@ -6,7 +6,7 @@ LoginWindow::LoginWindow(QWidget *parent)
     , ui(new Ui::LoginWindow)
 {
     ui->setupUi(this);
-    createDatabase();
+    setupDatabase();
 }
 
 LoginWindow::~LoginWindow()
@@ -14,7 +14,7 @@ LoginWindow::~LoginWindow()
     delete ui;
 }
 
-void LoginWindow::createDatabase() {
+void LoginWindow::setupDatabase() {
     db = QSqlDatabase::addDatabase("QPSQL");
     db.setHostName("172.17.0.2");
     db.setDatabaseName("users");
@@ -32,7 +32,7 @@ void LoginWindow::createDatabase() {
     }
 }
 
-bool LoginWindow::isNicknameTaken(const QString &nickname) {
+bool LoginWindow::doesNicknameExist(const QString &nickname) {
     QSqlQuery query(db);
     query.prepare("SELECT 1 FROM nicknames WHERE nickname = ?");
     query.addBindValue(nickname);
@@ -71,13 +71,14 @@ void LoginWindow::on_nickname_returnPressed()
         return;
     }
 
-    if (isNicknameTaken(nickname)) {
+    if (doesNicknameExist(nickname)) {
         QMessageBox::warning(this, tr("Error"), tr("This nickname is already taken"));
         return;
     }
     nickName = nickname;
     addNickname(nickname);
     emit loginSuccessful();
+    emit userNameEntered(nickName);
 }
 
 QString LoginWindow::getNickname() const

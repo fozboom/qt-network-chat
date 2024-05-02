@@ -10,21 +10,17 @@ class ServerManager : public QObject
     Q_OBJECT
 public:
     explicit ServerManager(int portNumber = 8080, QObject *parent = nullptr);
-    void notifyAllClients (QString prevName, QString name);
     void disconnectClient(QTcpSocket *client, const QString& reason);
 
 public slots:
-    void onTextForOtherClients(QString message, QString receiver, QString sender);
+    void onMessageForClients(QString message, QString receiver, QString sender);
 signals:
     void newClientConnected(QTcpSocket * client);
     void clientDisconnected(QTcpSocket * client);
 
 private slots:
-    void newClientConnectionReceived();
-    void clientConnectionAborted();
-
-
-
+    void onNewClientConnected();
+    void onClientDisconnected();
 private:
     QTcpServer * server;
     QMap <QString, QTcpSocket *> clients;
