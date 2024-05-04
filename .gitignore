@@ -1040,3 +1040,10 @@ dkms.conf
 *.uf2
 # Raspberry Pi Pico disassembler file
 *.dis
+
+
+!/run-on-windows/
+!/run-on-windows/**
+!/run-on-linux/
+!/run-on-linux/**
+
