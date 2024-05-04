@@ -12,6 +12,7 @@ public:
     explicit ServerManager(int portNumber = 8080, QObject *parent = nullptr);
     void disconnectClient(QTcpSocket *client, const QString& reason);
     QString getCurrentUserName();
+    void setUserNameInProtocol(QString name);
 public slots:
     void onMessageForClients(QString message, QString receiver, QString sender);
 signals:

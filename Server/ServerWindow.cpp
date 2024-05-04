@@ -19,7 +19,7 @@ void ServerWindow::newClientConnected(QTcpSocket *client)
     auto id = client->property("id").toInt();
     ui->listClients->addItem(QString("Client with id %1 connected").arg(id));
     auto chatWindow = new ChatWindow(client);
-    ui->tabChats->addTab(chatWindow, server->getCurrentUserName() + "ZY");
+    ui->tabChats->addTab(chatWindow, server->getCurrentUserName());
 
     connect(chatWindow, &ChatWindow::sendClientNameToTabWindow, this, &ServerWindow::setClientName);
     connect(chatWindow, &ChatWindow::typingStatusChanged, [this](QString name) {
@@ -56,5 +56,7 @@ void ServerWindow::setClientName(QString name)
     auto widget = qobject_cast<QWidget *>(sender());
     auto index = ui->tabChats->indexOf(widget);
     ui->tabChats->setTabText(index, name);
+    tabName = name;
+    server->setUserNameInProtocol(tabName);
 }
 

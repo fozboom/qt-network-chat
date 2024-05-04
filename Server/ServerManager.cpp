@@ -26,7 +26,6 @@ void ServerManager::onMessageForClients(QString message, QString receiver, QStri
 void ServerManager::onNewClientConnected()
 {
     auto client = server->nextPendingConnection();
-
     auto id = clients.count();
     auto clientName = QString("Client %1").arg(id);
     client->setProperty("id", id);
@@ -64,6 +63,11 @@ void ServerManager::onClientDisconnected()
 QString ServerManager::getCurrentUserName()
 {
     return protocol.getCurrentName();
+}
+
+void ServerManager::setUserNameInProtocol(QString name)
+{
+    protocol.setCurrentName(name);
 }
 
 

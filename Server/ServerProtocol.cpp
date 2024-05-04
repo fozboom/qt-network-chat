@@ -107,3 +107,8 @@ QString ServerProtocol::getCurrentName() const
 {
     return currentName;
 }
+
+void ServerProtocol::setCurrentName(const QString &newCurrentName)
+{
+    currentName = newCurrentName;
+}

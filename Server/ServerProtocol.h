@@ -43,6 +43,8 @@ public:
 
     QString getCurrentName() const;
 
+    void setCurrentName(const QString &newCurrentName);
+
 private:
     MessageType messageType;
     QString chatMessage;

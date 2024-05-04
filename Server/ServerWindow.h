@@ -27,7 +27,7 @@ private slots:
 private:
     Ui::ServerWindow *ui;
     ServerManager * server;
-
+    QString tabName;
 private:
     void setupServerConfiguration();
 };
