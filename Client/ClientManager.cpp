@@ -3,69 +3,70 @@
 
 ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
     : QObject{parent}
-    , serverIP(_ip)
-    , serverPort(_port)
+    , ip(_ip)
+    , port(_port)
 {
     socket = new QTcpSocket(this);
-    connect (socket, &QTcpSocket::connected, this, &ClientManager::serverConnected);
-    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::sercerDisconnected);
-    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::processIncomingData);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
 }
 
 
 
 void ClientManager::connectToServer()
 {
-    socket->connectToHost(serverIP, serverPort);
+    socket->connectToHost(ip, port);
     protocol.setMyName(userName);
-    socket->write(protocol.sendUserNameToServer(userName));
+    socket->write(protocol.sendUserName(userName));
+
 }
 
-void ClientManager::sendTextMessage(QString message, QString receiver)
+void ClientManager::sendMessage(QString message, QString receiver)
 {
-    socket->write(protocol.sendTextMessageToReceiver(message, receiver));
+    socket->write(protocol.sendTextMessage(message, receiver));
 }
 
 void ClientManager::sendUserName(QString name)
 {
-    socket->write(protocol.sendUserNameToServer(name));
+    socket->write(protocol.sendUserName(name));
 }
 
 void ClientManager::sendIsTypingIndicator()
 {
-    socket->write(protocol.sendTypingNotification());
+    socket->write(protocol.sendTypingIndicator());
 }
 
-void ClientManager::updateProtocolUserName(QString name)
+void ClientManager::setNameInProtocol(QString name)
 {
     protocol.setMyName(name);
 }
 
-void ClientManager::processIncomingData()
+void ClientManager::readyRead()
 {
     auto data = socket->readAll();
-    protocol.loadMessageData(data);
+    protocol.loadData(data);
     switch (protocol.getType()) {
-    case ClientProtocol::TEXT_SENDING:
-        emit receivedTextMessage(protocol.getSender(),protocol.getMessage());
+    case ConversationProtocol::TEXT_SENDING:
+        emit textMessageReceived(protocol.getSender(),protocol.getMessage());
         break;
-    case ClientProtocol::NAME_SENDING:
-        emit receivedUserName(protocol.getName());
+    case ConversationProtocol::NAME_SENDING:
+        emit userNameReceived(protocol.getName());
         break;
-    case ClientProtocol::USER_IS_TYPING:
-        emit receivedTypingIndicator();
+    case ConversationProtocol::USER_IS_TYPING:
+        emit isTyping();
         break;
-    case ClientProtocol::CONNECTION_ACK:
-        emit receivedConnectionAcknowledgement(protocol.getMyName(), protocol.getClientNames());
+    case ConversationProtocol::CONNECTION_ACK:
+        emit connectionACK(protocol.getMyName(), protocol.getClientNames());
         break;
-    case ClientProtocol::NEW_CLIENT:
+    case ConversationProtocol::NEW_CLIENT:
         emit newClientConnectedToServer(protocol.getClientName());
         break;
-    case ClientProtocol::CLIENT_DISCONNECTED:
+    case ConversationProtocol::CLIENT_DISCONNECTED:
         emit clientDisconnected(protocol.getClientName());
         break;
-    case ClientProtocol::NAME_CHANGED:
-        emit clientNameUpdated(protocol.getPrevName(), protocol.getClientName());
+    case ConversationProtocol::NAME_CHANGED:
+        emit clientNameChanged(protocol.getPrevName(), protocol.getClientName());
         break;
 
     default:
@@ -76,5 +77,5 @@ void ClientManager::processIncomingData()
 void ClientManager::updateUserName(const QString &name)
 {
     userName = name;
-    protocol.setMyName(name);
+    protocol.setMyName(userName);
 }

@@ -7,18 +7,18 @@ ChatWindow::ChatWindow(QTcpSocket * _client, QWidget *parent)
 
 {
     ui->setupUi(this);
-    client = new ServerClientManager(_client, this);
+    client = new ClientManager(_client, this);
 
-    connect(client, &ServerClientManager::serverDisconnected, this, &ChatWindow::clientDisconnected);
-    connect(client, &ServerClientManager::receivedTextMessage, this, &ChatWindow::textMessageReceived);
-    connect(client, &ServerClientManager::clientNameUpdated, this, &ChatWindow::onClientNameChanged);
-    connect(client, &ServerClientManager::receivedTypingIndicator, this, &ChatWindow::onTyping);
-    connect(ui->editMessage, &QLineEdit::textChanged, client, &ServerClientManager::sendIsTypingIndicator);
+    connect(client, &ClientManager::disconnected, this, &ChatWindow::clientDisconnected);
+    connect(client, &ClientManager::textMessageReceived, this, &ChatWindow::textMessageReceived);
+    connect(client, &ClientManager::nameChanged, this, &ChatWindow::onClientNameChanged);
+    connect(client, &ClientManager::isTyping, this, &ChatWindow::onTyping);
+    connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
 }
 
 void ChatWindow::disconnect()
 {
-    client->disconnectFromServer();
+    client->disconnectFromHost();
 }
 
 ChatWindow::~ChatWindow()
@@ -28,7 +28,7 @@ ChatWindow::~ChatWindow()
 
 QTcpSocket *ChatWindow::getClient() const
 {
-    return client->getClientSocket();
+    return client->getClient();
 }
 
 
@@ -43,7 +43,7 @@ void ChatWindow::clientDisconnected()
 void ChatWindow::on_btnSend_clicked()
 {
     auto message = ui->editMessage->text().trimmed();
-    client->sendTextMessage(message);
+    client->sendMessage(message);
     ui->editMessage->setText("");
     ui->listMessages->addItem(message);
 }
@@ -56,17 +56,16 @@ void ChatWindow::textMessageReceived(QString message, QString receiver, QString 
     }
     else
     {
-        emit textForOtherClients(message, receiver, client->getClientName());
+        emit textForOtherClients(message, receiver, client->name());
     }
 }
 
 void ChatWindow::onTyping()
 {
-    emit isTyping(QString("%1 is typing...").arg(client->getClientName()));
+    emit isTyping(QString("%1 is typing...").arg(client->name()));
 }
 
 void ChatWindow::onClientNameChanged(QString prevName, QString name)
 {
     emit clientNameChanged(prevName, name);
 }
-

@@ -24,8 +24,8 @@ void ServerWindow::newClientConnected(QTcpSocket *client)
 
     connect(chatWindow, &ChatWindow::clientNameChanged, this, &ServerWindow::setClientName);
     connect(chatWindow, &ChatWindow::isTyping, [this](QString name) {
-            this->statusBar()->showMessage(name, 800);
-        });
+        this->statusBar()->showMessage(name, 800);
+    });
 
     connect(chatWindow, &ChatWindow::textForOtherClients, server, &ServerManager::onTextForOtherClients);
 }
@@ -49,7 +49,6 @@ void ServerWindow::setClientName(QString prevName, QString name)
 
     server->notifyAllClients(prevName, name);
 
-
 }
 
 void ServerWindow::setupServerConfiguration()
@@ -66,4 +65,3 @@ void ServerWindow::on_tabChats_tabCloseRequested(int index)
     chatWindow->disconnect();
     ui->tabChats->removeTab(index);
 }
-

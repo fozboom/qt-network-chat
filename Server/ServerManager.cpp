@@ -1,3 +1,4 @@
+
 #include "ServerManager.h"
 
 ServerManager::ServerManager(int portNumber, QObject *parent)
@@ -40,7 +41,7 @@ void ServerManager::newClientConnectionReceived()
     auto client = server->nextPendingConnection();
 
     auto id = clients.count();
-    auto clientName = protocol.getName();
+    auto clientName = QString("Client %1").arg(id);
     client->setProperty("id", id);
     client->setProperty("clientName", clientName);
 
@@ -87,5 +88,3 @@ void ServerManager::disconnectClient(QTcpSocket *client, const QString &reason)
     auto message = protocol.sendTextMessage(reason, client->property("clientName").toString(), "Server");
     client->write(message);
 }
-
-

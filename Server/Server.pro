@@ -10,17 +10,17 @@ CONFIG += c++17
 
 SOURCES += \
     ChatWindow.cpp \
-    ServerClientManager.cpp \
+    ClientManager.cpp \
+    ConversationProtocol.cpp \
     ServerManager.cpp \
-    ServerProtocol.cpp \
     ServerWindow.cpp \
     server_main.cpp
 
 HEADERS += \
     ChatWindow.h \
-    ServerClientManager.h \
+    ClientManager.h \
+    ConversationProtocol.h \
     ServerManager.h \
-    ServerProtocol.h \
     ServerWindow.h
 
 FORMS += \

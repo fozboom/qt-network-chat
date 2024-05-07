@@ -1,10 +1,10 @@
-#include "ServerProtocol.h"
+#include "ConversationProtocol.h"
 #include <QIODevice>
 #include <QDataStream>
 
-ServerProtocol::ServerProtocol() {}
+ConversationProtocol::ConversationProtocol() {}
 
-QByteArray ServerProtocol::serializeMessage(MessageType messageType, QString chatMessage)
+QByteArray ConversationProtocol::serializeMessageData(MessageType messageType, QString chatMessage)
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
@@ -13,7 +13,7 @@ QByteArray ServerProtocol::serializeMessage(MessageType messageType, QString cha
     return serializedData;
 }
 
-QByteArray ServerProtocol::sendTextMessage(QString message, QString receiver, QString sender)
+QByteArray ConversationProtocol::sendTextMessage(QString message, QString receiver, QString sender)
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
@@ -23,17 +23,17 @@ QByteArray ServerProtocol::sendTextMessage(QString message, QString receiver, QS
 }
 
 
-QByteArray ServerProtocol::sendTypingIndicator()
+QByteArray ConversationProtocol::sendTypingIndicator()
 {
-    return serializeMessage(USER_IS_TYPING, "");
+    return serializeMessageData(USER_IS_TYPING, "");
 }
 
-QByteArray ServerProtocol::sendUserName(QString name)
+QByteArray ConversationProtocol::sendUserName(QString name)
 {
-    return serializeMessage(NAME_SENDING, name);
+    return serializeMessageData(NAME_SENDING, name);
 }
 
-QByteArray ServerProtocol::setClientNameMessage(QString previousName, QString newName)
+QByteArray ConversationProtocol::setClientNameMessage(QString previousName, QString newName)
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
@@ -42,7 +42,7 @@ QByteArray ServerProtocol::setClientNameMessage(QString previousName, QString ne
     return serializedData;
 }
 
-QByteArray ServerProtocol::setConnectionAckMessage(QString clientName, QStringList otherClients)
+QByteArray ConversationProtocol::setConnectionAckMessage(QString clientName, QStringList otherClients)
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
@@ -51,17 +51,17 @@ QByteArray ServerProtocol::setConnectionAckMessage(QString clientName, QStringLi
     return serializedData;
 }
 
-QByteArray ServerProtocol::setNewClientMessage(QString clientName)
+QByteArray ConversationProtocol::setNewClientMessage(QString clientName)
 {
-    return serializeMessage(NEW_CLIENT, clientName);
+    return serializeMessageData(NEW_CLIENT, clientName);
 }
 
-QByteArray ServerProtocol::setClientDisconnectedMessage(QString clientName)
+QByteArray ConversationProtocol::setClientDisconnectedMessage(QString clientName)
 {
-    return serializeMessage(CLIENT_DISCONNECTED, clientName);
+    return serializeMessageData(CLIENT_DISCONNECTED, clientName);
 }
 
-void ServerProtocol::loadMessageData(QByteArray data)
+void ConversationProtocol::loadData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_0);
@@ -80,37 +80,37 @@ void ServerProtocol::loadMessageData(QByteArray data)
     }
 }
 
-QString ServerProtocol::getName() const
+QString ConversationProtocol::getName() const
 {
     return name;
 }
 
-void ServerProtocol::setName(const QString &newName)
+void ConversationProtocol::setName(const QString &newName)
 {
     name = newName;
 }
 
-QString ServerProtocol::getMessage() const
+QString ConversationProtocol::getMessage() const
 {
     return message;
 }
 
-void ServerProtocol::setMessage(const QString &newMessage)
+void ConversationProtocol::setMessage(const QString &newMessage)
 {
     message = newMessage;
 }
 
-ServerProtocol::MessageType ServerProtocol::getType() const
+ConversationProtocol::MessageType ConversationProtocol::getType() const
 {
     return type;
 }
 
-void ServerProtocol::setType(MessageType newType)
+void ConversationProtocol::setType(MessageType newType)
 {
     type = newType;
 }
 
-QString ServerProtocol::getReceiver() const
+QString ConversationProtocol::getReceiver() const
 {
     return receiver;
 }

@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
-#include "ClientProtocol.h"
+#include "ConversationProtocol.h"
 #include <QHostAddress>
 
 class ClientManager : public QObject
@@ -14,32 +14,33 @@ public:
     void connectToServer();
 
 
-    void sendTextMessage(QString message, QString receiver);
+    void sendMessage(QString message, QString receiver);
     void sendUserName(QString name);
     void sendIsTypingIndicator();
-    void updateProtocolUserName(QString name);
+    void setNameInProtocol(QString name);
 signals:
-    void serverConnected();
-    void sercerDisconnected();
+    void connected();
+    void disconnected();
+    //void dataReceived(QByteArray data);
 
-    void receivedTextMessage(QString sender, QString message);
-    void receivedTypingIndicator();
-    void receivedUserName(QString name);
+    void textMessageReceived(QString sender, QString message);
+    void isTyping();
+    void userNameReceived(QString name);
 
-    void receivedConnectionAcknowledgement(QString myName, QStringList clients);
+    void connectionACK(QString myName, QStringList clients);
     void newClientConnectedToServer (QString name);
-    void clientNameUpdated(QString prevName, QString name);
+    void clientNameChanged(QString prevName, QString name);
     void clientDisconnected(QString name);
 private slots:
-    void processIncomingData();
+    void readyRead();
 public slots:
     void updateUserName(const QString& name);
 
 private:
     QTcpSocket *socket;
-    QHostAddress serverIP;
-    int serverPort;
-    ClientProtocol protocol;
+    QHostAddress ip;
+    int port;
+    ConversationProtocol protocol;
     QString userName;
 };
 

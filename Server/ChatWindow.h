@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QTcpSocket>
-#include "ServerClientManager.h"
+#include "ClientManager.h"
 
 namespace Ui {
 class ChatWindow;
@@ -37,7 +37,7 @@ signals:
 
 private:
     Ui::ChatWindow *ui;
-    ServerClientManager *client;
+    ClientManager *client;
 };
 
 #endif // CHATWINDOW_H

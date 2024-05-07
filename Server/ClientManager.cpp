@@ -1,83 +1,80 @@
-#include "ServerClientManager.h"
+#include "ClientManager.h"
 #include <QDebug>
 #include <QString>
-ServerClientManager::ServerClientManager(QHostAddress _ip, int _port, QObject *parent)
+ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
     : QObject{parent}
-    , serverIP(_ip)
-    , serverPort(_port)
+    , ip(_ip)
+    , port(_port)
 {
-    clientSocket = new QTcpSocket(this);
-    connect (clientSocket, &QTcpSocket::connected, this, &ServerClientManager::serverConnected);
-    connect (clientSocket, &QTcpSocket::disconnected, this, &ServerClientManager::serverDisconnected);
-    connect (clientSocket, &QTcpSocket::readyRead, this, &ServerClientManager::processIncomingData);
+    socket = new QTcpSocket(this);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
 }
 
-ServerClientManager::ServerClientManager(QTcpSocket *_client, QObject *parent)
+ClientManager::ClientManager(QTcpSocket *_client, QObject *parent)
     : QObject{parent}
-    , clientSocket(_client)
+    , socket(_client)
 {
-    connect (clientSocket, &QTcpSocket::connected, this, &ServerClientManager::serverConnected);
-    connect (clientSocket, &QTcpSocket::disconnected, this, &ServerClientManager::serverDisconnected);
-    connect (clientSocket, &QTcpSocket::readyRead, this, &ServerClientManager::processIncomingData);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
 }
 
 
 
-void ServerClientManager::connectToServer()
+void ClientManager::connectToServer()
 {
-    clientSocket->connectToHost(serverIP, serverPort);
-
+    socket->connectToHost(ip, port);
 }
 
-void ServerClientManager::disconnectFromServer()
+void ClientManager::disconnectFromHost()
 {
-    clientSocket->disconnectFromHost();
+    socket->disconnectFromHost();
 }
 
-void ServerClientManager::sendTextMessage(QString message)
+void ClientManager::sendMessage(QString message)
 {
-    clientSocket->write(protocol.sendTextMessage(message, getClientName(), "Server"));
+    socket->write(protocol.sendTextMessage(message, name(), "Server"));
 }
 
-void ServerClientManager::sendUserName(QString name)
+void ClientManager::sendUserName(QString name)
 {
-    clientSocket->write(protocol.sendUserName(name));
+    socket->write(protocol.sendUserName(name));
 }
 
-void ServerClientManager::sendIsTypingIndicator()
+void ClientManager::sendIsTypingIndicator()
 {
-    clientSocket->write(protocol.sendTypingIndicator());
+    socket->write(protocol.sendTypingIndicator());
 }
 
-
-QString ServerClientManager::getClientName() const
+QString ClientManager::name() const
 {
-    auto id = clientSocket->property("id").toInt();
-    auto name = protocol.getName().length() > 0 ? protocol.getName() : QString("Client (%1)").arg(id);
+    auto name = protocol.getName();
     return name;
 }
 
-QTcpSocket *ServerClientManager::getClientSocket() const
+QTcpSocket *ClientManager::getClient() const
 {
-    return clientSocket;
+    return socket;
 }
 
-void ServerClientManager::processIncomingData()
+void ClientManager::readyRead()
 {
-    auto data = clientSocket->readAll();
-    protocol.loadMessageData(data);
+    auto data = socket->readAll();
+    protocol.loadData(data);
     switch (protocol.getType()) {
-    case ServerProtocol::TEXT_SENDING:
-        emit receivedTextMessage(protocol.getMessage(), protocol.getReceiver(), getClientName());
+    case ConversationProtocol::TEXT_SENDING:
+        emit textMessageReceived(protocol.getMessage(), protocol.getReceiver(), name());
         break;
-    case ServerProtocol::NAME_SENDING: {
-        auto prevName = clientSocket->property("clientName").toString();
-        clientSocket->setProperty("clientName", getClientName());
-        emit clientNameUpdated(prevName, getClientName());
+    case ConversationProtocol::NAME_SENDING: {
+        auto prevName = socket->property("clientName").toString();
+        socket->setProperty("clientName", name());
+        emit nameChanged(prevName, name());
         break;
     }
-    case ServerProtocol::USER_IS_TYPING:
-        emit receivedTypingIndicator();
+    case ConversationProtocol::USER_IS_TYPING:
+        emit isTyping();
         break;
     default:
         break;
