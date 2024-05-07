@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
-#include "ConversationProtocol.h"
+#include "ClientProtocol.h"
 #include <QHostAddress>
 
 class ClientManager : public QObject
@@ -28,7 +28,7 @@ signals:
 
     void receivedConnectionAcknowledgement(QString myName, QStringList clients);
     void newClientConnectedToServer (QString name);
-    void clientNameChanged(QString prevName, QString name);
+    void clientNameUpdated(QString prevName, QString name);
     void clientDisconnected(QString name);
 private slots:
     void processIncomingData();
@@ -39,7 +39,7 @@ private:
     QTcpSocket *socket;
     QHostAddress serverIP;
     int serverPort;
-    ConversationProtocol protocol;
+    ClientProtocol protocol;
     QString userName;
 };
 

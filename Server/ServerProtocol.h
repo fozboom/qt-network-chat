@@ -1,13 +1,12 @@
-#ifndef CONVERSATIONPROTOCOL_H
-#define CONVERSATIONPROTOCOL_H
+#ifndef SERVERPROTOCOL_H
+#define SERVERPROTOCOL_H
 #include <QByteArray>
 #include <QString>
 
-class ConversationProtocol
+class ServerProtocol
 {
 public:
     enum MessageType {
-        FILE_SENDING,
         NAME_SENDING,
         TEXT_SENDING,
         USER_IS_TYPING,
@@ -17,8 +16,8 @@ public:
         CLIENT_DISCONNECTED
     };
 
-    ConversationProtocol();
-    QByteArray serializeMessageData(MessageType type, QString message);
+    ServerProtocol();
+    QByteArray serializeMessage(MessageType type, QString message);
     QByteArray sendTextMessage (QString message, QString receiver, QString sender);
     QByteArray sendTypingIndicator ();
     QByteArray sendUserName (QString name);
@@ -28,7 +27,7 @@ public:
     QByteArray setNewClientMessage (QString clientName);
     QByteArray setClientDisconnectedMessage (QString clientName);
 
-    void loadData(QByteArray data);
+    void loadMessageData(QByteArray data);
 
     QString getName() const;
     void setName(const QString &newName);
@@ -49,4 +48,4 @@ private:
 
 };
 
-#endif // CONVERSATIONPROTOCOL_H
+#endif // SERVERPROTOCOL_H

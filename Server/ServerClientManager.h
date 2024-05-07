@@ -1,41 +1,40 @@
-#ifndef CLIENTMANAGER_H
-#define CLIENTMANAGER_H
+#ifndef SERVERCLIENTMANAGER_H
+#define SERVERCLIENTMANAGER_H
 
 #include <QObject>
 #include <QTcpSocket>
-#include "ConversationProtocol.h"
+#include "ServerProtocol.h"
 #include <QHostAddress>
 
-class ClientManager : public QObject
+class ServerClientManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ClientManager(QHostAddress _ip = QHostAddress::LocalHost, int _port = 8080, QObject *parent = nullptr);
-    explicit ClientManager(QTcpSocket * _client, QObject *parent = nullptr);
+    explicit ServerClientManager(QHostAddress _ip = QHostAddress::LocalHost, int _port = 8080, QObject *parent = nullptr);
+    explicit ServerClientManager(QTcpSocket * _client, QObject *parent = nullptr);
     void connectToServer();
-    void disconnectFromHost();
-    void sendMessage(QString message);
+    void disconnectFromServer();
+    void sendTextMessage(QString message);
     void sendUserName(QString name);
     void sendIsTypingIndicator();
-    QString name() const;
-    QTcpSocket* getClient() const;
+    QString getClientName() const;
+    QTcpSocket* getClientSocket() const;
 
 signals:
-    void connected();
-    void disconnected();
-    //void dataReceived(QByteArray data);
+    void serverConnected();
+    void serverDisconnected();
 
-    void textMessageReceived(QString message, QString receiver, QString sender);
-    void isTyping();
-    void nameChanged(QString prevName, QString name);
+    void receivedTextMessage(QString message, QString receiver, QString sender);
+    void receivedTypingIndicator();
+    void clientNameUpdated(QString prevName, QString name);
 private slots:
-    void readyRead();
+    void processIncomingData();
 
 private:
-    QTcpSocket *socket;
-    QHostAddress ip;
-    int port;
-    ConversationProtocol protocol;
+    QTcpSocket *clientSocket;
+    QHostAddress serverIP;
+    int serverPort;
+    ServerProtocol protocol;
 };
 
-#endif // CLIENTMANAGER_H
+#endif // SERVERCLIENTMANAGER_H

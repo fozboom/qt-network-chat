@@ -18,24 +18,22 @@ void ClientManager::connectToServer()
 {
     socket->connectToHost(serverIP, serverPort);
     protocol.setMyName(userName);
-    socket->write(protocol.sendUserName(userName));
-
-    qDebug() << "Connected send name - " << userName;
+    socket->write(protocol.sendUserNameToServer(userName));
 }
 
 void ClientManager::sendTextMessage(QString message, QString receiver)
 {
-    socket->write(protocol.sendTextMessage(message, receiver));
+    socket->write(protocol.sendTextMessageToReceiver(message, receiver));
 }
 
 void ClientManager::sendUserName(QString name)
 {
-    socket->write(protocol.sendUserName(name));
+    socket->write(protocol.sendUserNameToServer(name));
 }
 
 void ClientManager::sendIsTypingIndicator()
 {
-    socket->write(protocol.sendTypingIndicator());
+    socket->write(protocol.sendTypingNotification());
 }
 
 void ClientManager::updateProtocolUserName(QString name)
@@ -46,35 +44,28 @@ void ClientManager::updateProtocolUserName(QString name)
 void ClientManager::processIncomingData()
 {
     auto data = socket->readAll();
-    protocol.loadData(data);
-    qDebug() << "Protocol type: " << protocol.getType();
-    qDebug() << "myname" << protocol.getMyName();
-    qDebug() << "list: \n";
-    foreach (auto c, protocol.getClientNames()) {
-        qDebug() << c << "\n";
-    }
+    protocol.loadMessageData(data);
     switch (protocol.getType()) {
-    case ConversationProtocol::TEXT_SENDING:
+    case ClientProtocol::TEXT_SENDING:
         emit receivedTextMessage(protocol.getSender(),protocol.getMessage());
         break;
-    case ConversationProtocol::NAME_SENDING:
+    case ClientProtocol::NAME_SENDING:
         emit receivedUserName(protocol.getName());
         break;
-    case ConversationProtocol::USER_IS_TYPING:
+    case ClientProtocol::USER_IS_TYPING:
         emit receivedTypingIndicator();
         break;
-    case ConversationProtocol::CONNECTION_ACK:
-        qDebug() << "ACK myname" << protocol.getMyName();
+    case ClientProtocol::CONNECTION_ACK:
         emit receivedConnectionAcknowledgement(protocol.getMyName(), protocol.getClientNames());
         break;
-    case ConversationProtocol::NEW_CLIENT:
+    case ClientProtocol::NEW_CLIENT:
         emit newClientConnectedToServer(protocol.getClientName());
         break;
-    case ConversationProtocol::CLIENT_DISCONNECTED:
+    case ClientProtocol::CLIENT_DISCONNECTED:
         emit clientDisconnected(protocol.getClientName());
         break;
-    case ConversationProtocol::NAME_CHANGED:
-        emit clientNameChanged(protocol.getPrevName(), protocol.getClientName());
+    case ClientProtocol::NAME_CHANGED:
+        emit clientNameUpdated(protocol.getPrevName(), protocol.getClientName());
         break;
 
     default:

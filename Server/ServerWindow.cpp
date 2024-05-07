@@ -49,6 +49,7 @@ void ServerWindow::setClientName(QString prevName, QString name)
 
     server->notifyAllClients(prevName, name);
 
+
 }
 
 void ServerWindow::setupServerConfiguration()
