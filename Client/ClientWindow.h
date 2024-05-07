@@ -21,20 +21,22 @@ public:
     void connectToServer();
 
 private slots:
-    void dataReceived(QString sender, QString message);
+    void onTextMessageReceived(QString sender, QString message);
 
     void on_btnSend_clicked();
 
 
-    void actionOnTypingIndicator();
+    void onTypingIndicatorReceived();
 
 
-    void onConnectionACK(QString myName, QStringList clients);
-    void onNewClientConnectedToServer (QString name);
-    void onClientNameChanged(QString prevName, QString name);
+    void onConnectionAcknowledged(QString myName, QStringList clients);
+    void onNewClientConnected (QString name);
+    void onClientNameUpdated(QString prevName, QString name);
     void onClientDisconnected(QString name);
+    void on_editMessage_returnPressed();
+
 public slots:
-    void updateAndSendUserName(const QString& name);
+    void updateUserNameAndNotifyServer(const QString& name);
 
 private:
     Ui::ClientWindow *ui;
@@ -42,7 +44,7 @@ private:
 
 private:
     void createMessage(const QString& username, const QString& message, bool isMyMessage);
-
+    void processMessageAndSend();
     void setupClient();
 
 };

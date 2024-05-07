@@ -3,6 +3,7 @@
 #include <QDebug>
 #include "ChatMessageInfo.h"
 #include <QLineEdit>
+#include <QMessageBox>
 
 ClientWindow::ClientWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,7 +22,7 @@ ClientWindow::~ClientWindow()
 
 
 
-void ClientWindow::dataReceived(QString sender, QString message)
+void ClientWindow::onTextMessageReceived(QString sender, QString message)
 {
     createMessage(sender, sender + ": " + message, false);
 }
@@ -31,11 +32,7 @@ void ClientWindow::dataReceived(QString sender, QString message)
 
 void ClientWindow::on_btnSend_clicked()
 {
-    auto data = ui->editMessage->text().trimmed();
-    client->sendTextMessage(data, ui->receiverBox->currentText());
-    ui->editMessage->setText("");
-
-    createMessage("",data.toUtf8(), true);
+    processMessageAndSend();
 }
 
 
@@ -55,20 +52,21 @@ void ClientWindow::setupClient()
         statusBar()->showMessage("You have been disconnected by the server", 10000);
         qDebug() << "Disconnected from server";
     });
-    connect(client, &ClientManager::receivedTextMessage, this, &ClientWindow::dataReceived);
-    connect(client, &ClientManager::receivedTypingIndicator, this, &ClientWindow::actionOnTypingIndicator);
+    connect(client, &ClientManager::receivedTextMessage, this, &ClientWindow::onTextMessageReceived);
+    connect(client, &ClientManager::receivedTypingIndicator, this, &ClientWindow::onTypingIndicatorReceived);
 
     connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
 
-    connect(client, &ClientManager::receivedConnectionAcknowledgement, this, &ClientWindow::onConnectionACK);
-    connect(client, &ClientManager::newClientConnectedToServer, this, &ClientWindow::onNewClientConnectedToServer);
+    connect(client, &ClientManager::receivedConnectionAcknowledgement, this, &ClientWindow::onConnectionAcknowledged);
+    connect(client, &ClientManager::newClientConnectedToServer, this, &ClientWindow::onNewClientConnected);
     connect(client, &ClientManager::clientDisconnected, this, &ClientWindow::onClientDisconnected);
-    connect(client, &ClientManager::clientNameUpdated, this, &ClientWindow::onClientNameChanged);
+    connect(client, &ClientManager::clientNameUpdated, this, &ClientWindow::onClientNameUpdated);
 }
 
 void ClientWindow::connectToServer()
 {
     client->connectToServer();
+    ui->editMessage->setFocus();
 }
 
 
@@ -88,15 +86,28 @@ void ClientWindow::createMessage(const QString& username, const QString& message
     ui->messages->setItemWidget(listItemWidget, chatMessageInfo);
 }
 
+void ClientWindow::processMessageAndSend()
+{
+    auto data = ui->editMessage->text().trimmed();
+    if (data.isEmpty()) {
+        QMessageBox::warning(this, tr("Warning"), tr("Message cannot be empty"));
+        return;
+    }
+    client->sendTextMessage(data, ui->receiverBox->currentText());
+    ui->editMessage->setText("");
 
-void ClientWindow::actionOnTypingIndicator()
+    createMessage("", data.toUtf8(), true);
+}
+
+
+void ClientWindow::onTypingIndicatorReceived()
 {
     statusBar()->showMessage("Server is typing...", 800);
 }
 
 
 
-void ClientWindow::onConnectionACK(QString myName, QStringList clients)
+void ClientWindow::onConnectionAcknowledged(QString myName, QStringList clients)
 {
     ui->receiverBox->clear();
     clients.prepend("Server");
@@ -106,7 +117,7 @@ void ClientWindow::onConnectionACK(QString myName, QStringList clients)
 
 }
 
-void ClientWindow::onNewClientConnectedToServer(QString name)
+void ClientWindow::onNewClientConnected(QString name)
 {
     ui->receiverBox->addItem(name);
     ui->receiverBox->update();
@@ -114,7 +125,7 @@ void ClientWindow::onNewClientConnectedToServer(QString name)
 
 }
 
-void ClientWindow::onClientNameChanged(QString prevName, QString name)
+void ClientWindow::onClientNameUpdated(QString prevName, QString name)
 {
     for (int i = 0; i < ui->receiverBox->count(); ++i) {
         if (ui->receiverBox->itemText(i) == prevName) {
@@ -135,8 +146,14 @@ void ClientWindow::onClientDisconnected(QString name)
     }
 }
 
-void ClientWindow::updateAndSendUserName(const QString &name)
+void ClientWindow::updateUserNameAndNotifyServer(const QString &name)
 {
     client->updateUserName(name);
 
 }
+
+void ClientWindow::on_editMessage_returnPressed()
+{
+    processMessageAndSend();
+}
+
