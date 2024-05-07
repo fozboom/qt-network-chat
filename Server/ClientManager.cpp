@@ -7,18 +7,18 @@ ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
     , port(_port)
 {
     socket = new QTcpSocket(this);
-    connect (socket, &QTcpSocket::connected, this, &ClientManager::clientConnectedToServer);
-    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::clientDisconnectedFromServer);
-    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readDataFromSocket);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
 }
 
 ClientManager::ClientManager(QTcpSocket *_client, QObject *parent)
     : QObject{parent}
     , socket(_client)
 {
-    connect (socket, &QTcpSocket::connected, this, &ClientManager::clientConnectedToServer);
-    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::clientDisconnectedFromServer);
-    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readDataFromSocket);
+    connect (socket, &QTcpSocket::connected, this, &ClientManager::connected);
+    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
+    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
 }
 
 
@@ -38,7 +38,10 @@ void ClientManager::sendMessage(QString message)
     socket->write(protocol.sendTextMessage(message, name(), "Server"));
 }
 
-
+void ClientManager::sendUserName(QString name)
+{
+    socket->write(protocol.sendUserName(name));
+}
 
 void ClientManager::sendIsTypingIndicator()
 {
@@ -56,19 +59,23 @@ QTcpSocket *ClientManager::getClient() const
     return socket;
 }
 
-void ClientManager::readDataFromSocket()
+void ClientManager::readyRead()
 {
     auto data = socket->readAll();
     protocol.loadData(data);
-    switch (protocol.getMessageType()) {
-    case TEXT_SENDING:
-        emit receivedTextMessageFromSender(protocol.getChatMessage(), protocol.getMessageReceiver(), name());
+    switch (protocol.getType()) {
+    case ConversationProtocol::TEXT_SENDING:
+        emit textMessageReceived(protocol.getMessage(), protocol.getReceiver(), name());
         break;
-    case USER_IS_TYPING:
-        emit userIsTyping();
+    case ConversationProtocol::NAME_SENDING: {
+        auto prevName = socket->property("clientName").toString();
+        socket->setProperty("clientName", name());
+        emit nameChanged(prevName, name());
         break;
-    case NAME_SENDING:
-        emit sendClientName(protocol.getCurrentName());
+    }
+    case ConversationProtocol::USER_IS_TYPING:
+        emit isTyping();
+        break;
     default:
         break;
     }

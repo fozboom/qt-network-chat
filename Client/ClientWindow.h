@@ -17,13 +17,12 @@ class ClientWindow : public QMainWindow
 public:
     ClientWindow(QWidget *parent = nullptr);
     ~ClientWindow();
-    void connectToServer();
-    void processAndSendMessage();
 
     void connectToServer();
 
 private slots:
-    void onMessageReceived(QString sender, QString message);
+    void dataReceived(QString sender, QString message);
+
     void on_btnSend_clicked();
 
 

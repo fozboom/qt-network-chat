@@ -3,7 +3,7 @@
 #include <QDebug>
 #include "ChatMessageInfo.h"
 #include <QLineEdit>
-#include <QMessageBox>
+
 ClientWindow::ClientWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::ClientWindow)
@@ -19,14 +19,9 @@ ClientWindow::~ClientWindow()
     delete ui;
 }
 
-void ClientWindow::connectToServer()
-{
-    client->connectToServer();
-}
 
 
-
-void ClientWindow::onMessageReceived(QString sender, QString message)
+void ClientWindow::dataReceived(QString sender, QString message)
 {
     createMessage(sender, sender + ": " + message, false);
 }
@@ -50,24 +45,25 @@ void ClientWindow::setupClient()
     ui->editMessage->setEnabled(true);
     ui->btnSend->setEnabled(true);
 
-    connect(client, &ClientManager::clientConnectedToSever, [this] (){
+    connect(client, &ClientManager::connected, [this] (){
         ui->sendLayout->setEnabled(true);
         qDebug() << "Connected to server";
     });
-    connect(client, &ClientManager::clientDisconnectedFromServer, [this] (){
+    connect(client, &ClientManager::disconnected, [this] (){
         ui->editMessage->setEnabled(false);
         ui->btnSend->setEnabled(false);
         statusBar()->showMessage("You have been disconnected by the server", 10000);
         qDebug() << "Disconnected from server";
     });
-    connect(client, &ClientManager::receivedTextMessageFromSender, this, &ClientWindow::onMessageReceived);
-    connect(client, &ClientManager::userIsTyping, this, &ClientWindow::onTypingIndicatorReceived);
+    connect(client, &ClientManager::textMessageReceived, this, &ClientWindow::dataReceived);
+    connect(client, &ClientManager::isTyping, this, &ClientWindow::actionOnTypingIndicator);
 
     connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
 
-    connect(client, &ClientManager::connectionAcknowledged, this, &ClientWindow::onConnectionAcknowledged);
+    connect(client, &ClientManager::connectionACK, this, &ClientWindow::onConnectionACK);
     connect(client, &ClientManager::newClientConnectedToServer, this, &ClientWindow::onNewClientConnectedToServer);
-    connect(client, &ClientManager::clientDisconnected, this, &ClientWindow::onClientDisconnectedFromServer);
+    connect(client, &ClientManager::clientDisconnected, this, &ClientWindow::onClientDisconnected);
+    connect(client, &ClientManager::clientNameChanged, this, &ClientWindow::onClientNameChanged);
 }
 
 void ClientWindow::connectToServer()
@@ -93,15 +89,14 @@ void ClientWindow::createMessage(const QString& username, const QString& message
 }
 
 
-void ClientWindow::onTypingIndicatorReceived()
+void ClientWindow::actionOnTypingIndicator()
 {
     statusBar()->showMessage("Server is typing...", 800);
 }
 
 
 
-
-void ClientWindow::onConnectionAcknowledged(QString myName, QStringList clients)
+void ClientWindow::onConnectionACK(QString myName, QStringList clients)
 {
     ui->receiverBox->clear();
     clients.prepend("Server");
@@ -130,8 +125,7 @@ void ClientWindow::onClientNameChanged(QString prevName, QString name)
     }
 }
 
-
-void ClientWindow::onClientDisconnectedFromServer(QString name)
+void ClientWindow::onClientDisconnected(QString name)
 {
     for (int i = 0; i < ui->receiverBox->count(); ++i) {
         if (ui->receiverBox->itemText(i) == name) {

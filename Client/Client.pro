@@ -11,7 +11,6 @@ CONFIG += c++17
 SOURCES += \
     ChatMessageInfo.cpp \
     ClientManager.cpp \
-    ClientProtocol.cpp \
     ClientWindow.cpp \
     ConversationProtocol.cpp \
     LoginWindow.cpp \
@@ -20,7 +19,6 @@ SOURCES += \
 HEADERS += \
     ChatMessageInfo.h \
     ClientManager.h \
-    ClientProtocol.h \
     ClientWindow.h \
     ConversationProtocol.h \
     LoginWindow.h

@@ -3,25 +3,28 @@
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include "ServerProtocol.h"
+#include "ConversationProtocol.h"
 
 class ServerManager : public QObject
 {
     Q_OBJECT
 public:
     explicit ServerManager(int portNumber = 8080, QObject *parent = nullptr);
+    void notifyAllClients (QString prevName, QString name);
     void disconnectClient(QTcpSocket *client, const QString& reason);
     QMap <QString, QTcpSocket *> clients;
 
 public slots:
-    void onMessageForClients(QString message, QString receiver, QString sender);
+    void onTextForOtherClients(QString message, QString receiver, QString sender);
 signals:
     void newClientConnected(QTcpSocket * client);
     void clientDisconnected(QTcpSocket * client);
 
 private slots:
-    void onNewClientConnected();
-    void onClientDisconnected();
+    void newClientConnectionReceived();
+    void clientConnectionAborted();
+
+
 
 private:
     QTcpServer * server;
