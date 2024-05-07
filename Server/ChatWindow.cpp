@@ -69,4 +69,3 @@ void ChatWindow::onSendName(QString name)
 {
     emit sendClientNameToTabWindow(name);
 }
-

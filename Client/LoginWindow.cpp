@@ -85,4 +85,3 @@ QString LoginWindow::getNickname() const
 {
     return nickName;
 }
-

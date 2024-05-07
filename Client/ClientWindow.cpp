@@ -28,7 +28,7 @@ void ClientWindow::connectToServer()
 
 void ClientWindow::onMessageReceived(QString sender, QString message)
 {
-    createMessage(sender + ": " + message, false);
+    createMessage(sender, sender + ": " + message, false);
 }
 
 
@@ -36,7 +36,11 @@ void ClientWindow::onMessageReceived(QString sender, QString message)
 
 void ClientWindow::on_btnSend_clicked()
 {
-    processAndSendMessage();
+    auto data = ui->editMessage->text().trimmed();
+    client->sendMessage(data, ui->receiverBox->currentText());
+    ui->editMessage->setText("");
+
+    createMessage("",data.toUtf8(), true);
 }
 
 
@@ -66,17 +70,24 @@ void ClientWindow::setupClient()
     connect(client, &ClientManager::clientDisconnected, this, &ClientWindow::onClientDisconnectedFromServer);
 }
 
+void ClientWindow::connectToServer()
+{
+    client->connectToServer();
+}
 
 
-void ClientWindow::createMessage(const QString& message, bool isMyMessage)
+
+
+
+void ClientWindow::createMessage(const QString& username, const QString& message, bool isMyMessage)
 {
     auto chatMessageInfo = new ChatMessageInfo();
-    chatMessageInfo->setMessage(message, isMyMessage);
+    chatMessageInfo->displayMessage(message, username, isMyMessage);
     auto listItemWidget = new QListWidgetItem();
     listItemWidget->setSizeHint(QSize(0,65));
     ui->messages->addItem(listItemWidget);
     if (isMyMessage) {
-       listItemWidget->setBackground(QColor(227,225,225));
+        listItemWidget->setBackground(QColor(227,225,225));
     }
     ui->messages->setItemWidget(listItemWidget, chatMessageInfo);
 }
@@ -97,16 +108,27 @@ void ClientWindow::onConnectionAcknowledged(QString myName, QStringList clients)
     foreach (auto cl, clients) {
         ui->receiverBox->addItem(cl);
     }
-    setWindowTitle(myName);
+
 }
 
 void ClientWindow::onNewClientConnectedToServer(QString name)
 {
-    qDebug() << "New client connected to server: " << name;
     ui->receiverBox->addItem(name);
     ui->receiverBox->update();
+
+
 }
 
+void ClientWindow::onClientNameChanged(QString prevName, QString name)
+{
+    for (int i = 0; i < ui->receiverBox->count(); ++i) {
+        if (ui->receiverBox->itemText(i) == prevName) {
+            ui->receiverBox->setItemText(i, name);
+
+            return;
+        }
+    }
+}
 
 
 void ClientWindow::onClientDisconnectedFromServer(QString name)
@@ -119,27 +141,8 @@ void ClientWindow::onClientDisconnectedFromServer(QString name)
     }
 }
 
-
-void ClientWindow::processAndSendMessage()
-{
-    auto data = ui->editMessage->text().trimmed();
-    if (data.isEmpty()) {
-        QMessageBox::warning(this, tr("Warning"), tr("Message cannot be empty"));
-        return;
-    }
-    client->sendMessage(data, ui->receiverBox->currentText());
-    ui->editMessage->setText("");
-
-    createMessage(data.toUtf8(), true);
-}
-
-void ClientWindow::on_editMessage_returnPressed()
-{
-    processAndSendMessage();
-}
-
 void ClientWindow::updateAndSendUserName(const QString &name)
 {
     client->updateUserName(name);
-}
 
+}

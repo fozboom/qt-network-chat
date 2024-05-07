@@ -47,7 +47,7 @@ void ClientManager::sendIsTypingIndicator()
 
 QString ClientManager::name() const
 {
-    auto name = protocol.getCurrentName();
+    auto name = protocol.getName();
     return name;
 }
 

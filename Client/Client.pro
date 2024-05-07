@@ -13,6 +13,7 @@ SOURCES += \
     ClientManager.cpp \
     ClientProtocol.cpp \
     ClientWindow.cpp \
+    ConversationProtocol.cpp \
     LoginWindow.cpp \
     client_main.cpp
 
@@ -21,6 +22,7 @@ HEADERS += \
     ClientManager.h \
     ClientProtocol.h \
     ClientWindow.h \
+    ConversationProtocol.h \
     LoginWindow.h
 
 FORMS += \

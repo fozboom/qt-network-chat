@@ -17,10 +17,9 @@ ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
 void ClientManager::connectToServer()
 {
     socket->connectToHost(ip, port);
-    protocol.setCurrentUserName(userName);
+    protocol.setMyName(userName);
     socket->write(protocol.sendUserName(userName));
 
-    qDebug() << "Connected send name - " << userName;
 }
 
 void ClientManager::sendMessage(QString message, QString receiver)
@@ -39,15 +38,18 @@ void ClientManager::sendIsTypingIndicator()
     socket->write(protocol.sendTypingIndicator());
 }
 
+void ClientManager::setNameInProtocol(QString name)
+{
+    protocol.setMyName(name);
+}
 
-
-void ClientManager::readDataFromSocket()
+void ClientManager::readyRead()
 {
     auto data = socket->readAll();
     protocol.loadData(data);
-    switch (protocol.getLastReceivedType()) {
-    case TEXT_SENDING:
-        emit receivedTextMessageFromSender(protocol.getMessageSender(),protocol.getLastReceivedMessage());
+    switch (protocol.getType()) {
+    case ConversationProtocol::TEXT_SENDING:
+        emit textMessageReceived(protocol.getSender(),protocol.getMessage());
         break;
     case USER_IS_TYPING:
         emit userIsTyping();
@@ -71,4 +73,5 @@ void ClientManager::readDataFromSocket()
 void ClientManager::updateUserName(const QString &name)
 {
     userName = name;
+    protocol.setMyName(userName);
 }

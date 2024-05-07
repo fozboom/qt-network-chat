@@ -15,6 +15,7 @@ public:
     void sendMessage(QString message, QString receiver);
     void sendUserName(QString name);
     void sendIsTypingIndicator();
+    void setNameInProtocol(QString name);
 signals:
     void clientConnectedToSever();
     void clientDisconnectedFromServer();
@@ -28,7 +29,7 @@ signals:
     void clientNameChanged(QString prevName, QString name);
     void clientDisconnected(QString name);
 private slots:
-    void readDataFromSocket();
+    void readyRead();
 public slots:
     void updateUserName(const QString& name);
 
@@ -36,7 +37,7 @@ private:
     QTcpSocket *socket;
     QHostAddress ip;
     int port;
-    ClientProtocol protocol;
+    ConversationProtocol protocol;
     QString userName;
 };
 
