@@ -14,32 +14,31 @@ public:
     void connectToServer();
 
 
-    void sendMessage(QString message, QString receiver);
+    void sendTextMessage(QString message, QString receiver);
     void sendUserName(QString name);
     void sendIsTypingIndicator();
-    void setNameInProtocol(QString name);
+    void updateProtocolUserName(QString name);
 signals:
-    void connected();
-    void disconnected();
-    //void dataReceived(QByteArray data);
+    void serverConnected();
+    void serverDisconnected();
 
-    void textMessageReceived(QString sender, QString message);
-    void isTyping();
-    void userNameReceived(QString name);
+    void receivedTextMessage(QString sender, QString message);
+    void receivedTypingIndicator();
+    void receivedUserName(QString name);
 
-    void connectionACK(QString myName, QStringList clients);
+    void receivedConnectionAcknowledgement(QString myName, QStringList clients);
     void newClientConnectedToServer (QString name);
-    void clientNameChanged(QString prevName, QString name);
+    void clientNameUpdated(QString prevName, QString name);
     void clientDisconnected(QString name);
 private slots:
-    void readyRead();
+    void processIncomingData();
 public slots:
     void updateUserName(const QString& name);
 
 private:
     QTcpSocket *socket;
-    QHostAddress ip;
-    int port;
+    QHostAddress serverIP;
+    int serverPort;
     ConversationProtocol protocol;
     QString userName;
 };

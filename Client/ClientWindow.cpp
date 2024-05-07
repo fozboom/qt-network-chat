@@ -32,7 +32,7 @@ void ClientWindow::dataReceived(QString sender, QString message)
 void ClientWindow::on_btnSend_clicked()
 {
     auto data = ui->editMessage->text().trimmed();
-    client->sendMessage(data, ui->receiverBox->currentText());
+    client->sendTextMessage(data, ui->receiverBox->currentText());
     ui->editMessage->setText("");
 
     createMessage("",data.toUtf8(), true);
@@ -45,25 +45,25 @@ void ClientWindow::setupClient()
     ui->editMessage->setEnabled(true);
     ui->btnSend->setEnabled(true);
 
-    connect(client, &ClientManager::connected, [this] (){
+    connect(client, &ClientManager::serverConnected, [this] (){
         ui->sendLayout->setEnabled(true);
         qDebug() << "Connected to server";
     });
-    connect(client, &ClientManager::disconnected, [this] (){
+    connect(client, &ClientManager::serverDisconnected, [this] (){
         ui->editMessage->setEnabled(false);
         ui->btnSend->setEnabled(false);
         statusBar()->showMessage("You have been disconnected by the server", 10000);
         qDebug() << "Disconnected from server";
     });
-    connect(client, &ClientManager::textMessageReceived, this, &ClientWindow::dataReceived);
-    connect(client, &ClientManager::isTyping, this, &ClientWindow::actionOnTypingIndicator);
+    connect(client, &ClientManager::receivedTextMessage, this, &ClientWindow::dataReceived);
+    connect(client, &ClientManager::receivedTypingIndicator, this, &ClientWindow::actionOnTypingIndicator);
 
     connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
 
-    connect(client, &ClientManager::connectionACK, this, &ClientWindow::onConnectionACK);
+    connect(client, &ClientManager::receivedConnectionAcknowledgement, this, &ClientWindow::onConnectionACK);
     connect(client, &ClientManager::newClientConnectedToServer, this, &ClientWindow::onNewClientConnectedToServer);
     connect(client, &ClientManager::clientDisconnected, this, &ClientWindow::onClientDisconnected);
-    connect(client, &ClientManager::clientNameChanged, this, &ClientWindow::onClientNameChanged);
+    connect(client, &ClientManager::clientNameUpdated, this, &ClientWindow::onClientNameChanged);
 }
 
 void ClientWindow::connectToServer()
