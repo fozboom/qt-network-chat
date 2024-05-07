@@ -30,6 +30,7 @@ signals:
     void newClientConnectedToServer (QString name);
     void clientNameUpdated(QString prevName, QString name);
     void clientDisconnected(QString name);
+    void errorOccurred(QAbstractSocket::SocketError socketError);
 private slots:
     void processIncomingData();
 public slots:

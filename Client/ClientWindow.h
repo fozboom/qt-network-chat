@@ -34,6 +34,7 @@ private slots:
     void onClientNameUpdated(QString prevName, QString name);
     void onClientDisconnected(QString name);
     void on_editMessage_returnPressed();
+    void handleConnectionError(QAbstractSocket::SocketError socketError);
 
 public slots:
     void updateUserNameAndNotifyServer(const QString& name);

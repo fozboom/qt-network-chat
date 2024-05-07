@@ -61,15 +61,21 @@ void ClientWindow::setupClient()
     connect(client, &ClientManager::newClientConnectedToServer, this, &ClientWindow::onNewClientConnected);
     connect(client, &ClientManager::clientDisconnected, this, &ClientWindow::onClientDisconnected);
     connect(client, &ClientManager::clientNameUpdated, this, &ClientWindow::onClientNameUpdated);
+
 }
 
 void ClientWindow::connectToServer()
 {
     client->connectToServer();
-    ui->editMessage->setFocus();
+
 }
 
-
+void ClientWindow::handleConnectionError(QAbstractSocket::SocketError socketError)
+{
+    Q_UNUSED(socketError);
+    QMessageBox::critical(this, "Error", "Server not running");
+    close();
+}
 
 
 

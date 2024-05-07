@@ -1,6 +1,6 @@
 #include "ClientManager.h"
 #include <QDebug>
-
+#include <QMessageBox>
 ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
     : QObject{parent}
     , serverIP(_ip)
@@ -17,9 +17,13 @@ ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
 void ClientManager::connectToServer()
 {
     socket->connectToHost(serverIP, serverPort);
-    protocol.setMyName(userName);
-    socket->write(protocol.sendUserName(userName));
-
+    if (!socket->waitForConnected(3000)) {
+        QMessageBox::critical(nullptr, "Error", "Server offline");
+        exit(EXIT_FAILURE);
+    } else {
+        protocol.setMyName(userName);
+        socket->write(protocol.sendUserName(userName));
+    }
 }
 
 void ClientManager::sendTextMessage(QString message, QString receiver)
