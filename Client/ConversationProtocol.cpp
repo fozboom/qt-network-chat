@@ -39,6 +39,9 @@ void ConversationProtocol::loadData(QByteArray data)
     in.setVersion(QDataStream::Qt_5_0);
     in >> type;
     qDebug() << "loadData";
+    foreach (auto c, clientNames) {
+        qDebug() << c << '\n';
+    }
     switch(type) {
     case TEXT_SENDING:
         in >> sender >> receiver >> message;
@@ -122,4 +125,9 @@ QStringList ConversationProtocol::getClientNames() const
 QString ConversationProtocol::getSender() const
 {
     return sender;
+}
+
+void ConversationProtocol::setMyName(const QString &newMyName)
+{
+    myName = newMyName;
 }

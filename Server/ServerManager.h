@@ -12,6 +12,7 @@ public:
     explicit ServerManager(int portNumber = 8080, QObject *parent = nullptr);
     void notifyAllClients (QString prevName, QString name);
     void disconnectClient(QTcpSocket *client, const QString& reason);
+    QMap <QString, QTcpSocket *> clients;
 
 public slots:
     void onTextForOtherClients(QString message, QString receiver, QString sender);
@@ -27,7 +28,7 @@ private slots:
 
 private:
     QTcpServer * server;
-    QMap <QString, QTcpSocket *> clients;
+
     ConversationProtocol protocol;
 private:
     void startServer(int portNumber);

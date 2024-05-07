@@ -51,6 +51,8 @@ public:
 
     QString getSender() const;
 
+    void setMyName(const QString &newMyName);
+
 private:
     MessageType type;
     QString message;

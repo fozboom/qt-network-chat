@@ -17,7 +17,7 @@ public:
     void sendMessage(QString message, QString receiver);
     void sendUserName(QString name);
     void sendIsTypingIndicator();
-
+    void setNameInProtocol(QString name);
 signals:
     void connected();
     void disconnected();
@@ -33,12 +33,15 @@ signals:
     void clientDisconnected(QString name);
 private slots:
     void readyRead();
+public slots:
+    void updateUserName(const QString& name);
 
 private:
     QTcpSocket *socket;
     QHostAddress ip;
     int port;
     ConversationProtocol protocol;
+    QString userName;
 };
 
 #endif // CLIENTMANAGER_H

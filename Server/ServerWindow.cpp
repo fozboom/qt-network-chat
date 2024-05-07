@@ -42,6 +42,11 @@ void ServerWindow::setClientName(QString prevName, QString name)
     auto index = ui->tabChats->indexOf(widget);
     ui->tabChats->setTabText(index, name);
 
+    if (server->clients.contains(prevName)) {
+        auto clientSocket = server->clients.take(prevName);
+        server->clients[name] = clientSocket;
+    }
+
     server->notifyAllClients(prevName, name);
 
 }

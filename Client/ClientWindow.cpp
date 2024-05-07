@@ -66,10 +66,12 @@ void ClientWindow::setupClient()
     connect(client, &ClientManager::clientNameChanged, this, &ClientWindow::onClientNameChanged);
 }
 
-void ClientWindow::on_actionConnect_triggered()
+void ClientWindow::connectToServer()
 {
     client->connectToServer();
 }
+
+
 
 void ClientWindow::createMessage(const QString& message, bool isMyMessage)
 {
@@ -91,11 +93,6 @@ void ClientWindow::actionOnTypingIndicator()
 }
 
 
-void ClientWindow::on_userNameEdit_returnPressed()
-{
-    auto userName = ui->userNameEdit->text().trimmed();
-    client->sendUserName(userName);
-}
 
 void ClientWindow::onConnectionACK(QString myName, QStringList clients)
 {
@@ -112,6 +109,8 @@ void ClientWindow::onNewClientConnectedToServer(QString name)
     qDebug() << "New client connected to server: " << name;
     ui->receiverBox->addItem(name);
     ui->receiverBox->update();
+
+
 }
 
 void ClientWindow::onClientNameChanged(QString prevName, QString name)
@@ -119,6 +118,7 @@ void ClientWindow::onClientNameChanged(QString prevName, QString name)
     for (int i = 0; i < ui->receiverBox->count(); ++i) {
         if (ui->receiverBox->itemText(i) == prevName) {
             ui->receiverBox->setItemText(i, name);
+
             return;
         }
     }
@@ -132,5 +132,12 @@ void ClientWindow::onClientDisconnected(QString name)
             return;
         }
     }
+}
+
+void ClientWindow::updateAndSendUserName(const QString &name)
+{
+    qDebug() << "name - " << name;
+    client->updateUserName(name);
+
 }
 

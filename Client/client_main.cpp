@@ -1,11 +1,27 @@
+#include "LoginWindow.h"
 #include "ClientWindow.h"
-
+#include <QDebug>
 #include <QApplication>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    ClientWindow w;
-    w.show();
+
+    LoginWindow login;
+    ClientWindow client;
+
+    QObject::connect(&login, &LoginWindow::loginSuccessful, [&]() {
+        login.close();
+        client.updateAndSendUserName(login.getNickname());
+        client.connectToServer();
+        client.show();
+    });
+    QObject::connect(&a, &QApplication::aboutToQuit, [&]() {
+        qDebug() << "removeNickname";
+        login.removeNickname(login.getNickname());
+    });
+
+    login.show();
+
     return a.exec();
 }

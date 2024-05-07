@@ -77,6 +77,7 @@ void ClientManager::readyRead()
         auto prevName = socket->property("clientName").toString();
         socket->setProperty("clientName", name());
         emit nameChanged(prevName, name());
+        qDebug() <<"name changed server -" << name();
         break;
     }
     case ConversationProtocol::USER_IS_TYPING:

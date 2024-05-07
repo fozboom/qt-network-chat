@@ -17,11 +17,10 @@ ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
 void ClientManager::connectToServer()
 {
     socket->connectToHost(ip, port);
-    if (socket->waitForConnected(3000)) {
-        qDebug() << "Connected";
-    } else {
-        qDebug() << "Connection failed: " << socket->errorString();
-    }
+    protocol.setMyName(userName);
+    socket->write(protocol.sendUserName(userName));
+
+    qDebug() << "Connected send name - " << userName;
 }
 
 void ClientManager::sendMessage(QString message, QString receiver)
@@ -39,11 +38,21 @@ void ClientManager::sendIsTypingIndicator()
     socket->write(protocol.sendTypingIndicator());
 }
 
+void ClientManager::setNameInProtocol(QString name)
+{
+    protocol.setMyName(name);
+}
+
 void ClientManager::readyRead()
 {
     auto data = socket->readAll();
     protocol.loadData(data);
     qDebug() << "Protocol type: " << protocol.getType();
+    qDebug() << "myname" << protocol.getMyName();
+    qDebug() << "list: \n";
+    foreach (auto c, protocol.getClientNames()) {
+        qDebug() << c << "\n";
+    }
     switch (protocol.getType()) {
     case ConversationProtocol::TEXT_SENDING:
         emit textMessageReceived(protocol.getSender(),protocol.getMessage());
@@ -55,6 +64,7 @@ void ClientManager::readyRead()
         emit isTyping();
         break;
     case ConversationProtocol::CONNECTION_ACK:
+        qDebug() << "ACK myname" << protocol.getMyName();
         emit connectionACK(protocol.getMyName(), protocol.getClientNames());
         break;
     case ConversationProtocol::NEW_CLIENT:
@@ -70,4 +80,11 @@ void ClientManager::readyRead()
     default:
         break;
     }
+}
+
+void ClientManager::updateUserName(const QString &name)
+{
+    userName = name;
+    qDebug() << "name in update" << userName;
+    protocol.setMyName(userName);
 }
