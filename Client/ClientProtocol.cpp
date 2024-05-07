@@ -1,10 +1,10 @@
-#include "ConversationProtocol.h"
+#include "ClientProtocol.h"
 #include <QIODevice>
 #include <QDebug>
 
-ConversationProtocol::ConversationProtocol() {}
+ClientProtocol::ClientProtocol() {}
 
-QByteArray ConversationProtocol::serializeMessageData(MessageType messageType, QString chatMessage)
+QByteArray ClientProtocol::serializeMessage(MessageType messageType, QString chatMessage)
 {
     QByteArray serializedData;
     QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
@@ -13,7 +13,7 @@ QByteArray ConversationProtocol::serializeMessageData(MessageType messageType, Q
     return serializedData;
 }
 
-QByteArray ConversationProtocol::sendTextMessage (QString message, QString receiver)
+QByteArray ClientProtocol::sendTextMessage (QString message, QString receiver)
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
@@ -23,17 +23,17 @@ QByteArray ConversationProtocol::sendTextMessage (QString message, QString recei
 }
 
 
-QByteArray ConversationProtocol::sendTypingIndicator()
+QByteArray ClientProtocol::sendTypingIndicator()
 {
-    return serializeMessageData(USER_IS_TYPING, "");
+    return serializeMessage(USER_IS_TYPING, "");
 }
 
-QByteArray ConversationProtocol::sendUserName(QString name)
+QByteArray ClientProtocol::sendUserName(QString name)
 {
-    return serializeMessageData(NAME_SENDING, name);
+    return serializeMessage(NAME_SENDING, name);
 }
 
-void ConversationProtocol::loadData(QByteArray data)
+void ClientProtocol::loadMessageData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
     in.setVersion(QDataStream::Qt_5_0);
@@ -67,67 +67,67 @@ void ConversationProtocol::loadData(QByteArray data)
     }
 }
 
-QString ConversationProtocol::getName() const
+QString ClientProtocol::getName() const
 {
     return name;
 }
 
-void ConversationProtocol::setName(const QString &newName)
+void ClientProtocol::setName(const QString &newName)
 {
     name = newName;
 }
 
-QString ConversationProtocol::getMessage() const
+QString ClientProtocol::getMessage() const
 {
     return message;
 }
 
-void ConversationProtocol::setMessage(const QString &newMessage)
+void ClientProtocol::setMessage(const QString &newMessage)
 {
     message = newMessage;
 }
 
-ConversationProtocol::MessageType ConversationProtocol::getType() const
+ClientProtocol::MessageType ClientProtocol::getType() const
 {
     return type;
 }
 
-void ConversationProtocol::setType(MessageType newType)
+void ClientProtocol::setType(MessageType newType)
 {
     type = newType;
 }
 
-QString ConversationProtocol::getReceiver() const
+QString ClientProtocol::getReceiver() const
 {
     return receiver;
 }
 
-QString ConversationProtocol::getClientName() const
+QString ClientProtocol::getClientName() const
 {
     return clientName;
 }
 
-QString ConversationProtocol::getPrevName() const
+QString ClientProtocol::getPrevName() const
 {
     return prevName;
 }
 
-QString ConversationProtocol::getMyName() const
+QString ClientProtocol::getMyName() const
 {
     return myName;
 }
 
-QStringList ConversationProtocol::getClientNames() const
+QStringList ClientProtocol::getClientNames() const
 {
     return clientNames;
 }
 
-QString ConversationProtocol::getSender() const
+QString ClientProtocol::getSender() const
 {
     return sender;
 }
 
-void ConversationProtocol::setMyName(const QString &newMyName)
+void ClientProtocol::setMyName(const QString &newMyName)
 {
     myName = newMyName;
 }

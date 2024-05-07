@@ -62,18 +62,18 @@ QTcpSocket *ClientManager::getClientSocket() const
 void ClientManager::processIncomingData()
 {
     auto data = clientSocket->readAll();
-    protocol.loadData(data);
+    protocol.loadMessageData(data);
     switch (protocol.getType()) {
-    case ConversationProtocol::TEXT_SENDING:
+    case ServerProtocol::TEXT_SENDING:
         emit receivedTextMessage(protocol.getMessage(), protocol.getReceiver(), name());
         break;
-    case ConversationProtocol::NAME_SENDING: {
+    case ServerProtocol::NAME_SENDING: {
         auto prevName = clientSocket->property("clientName").toString();
         clientSocket->setProperty("clientName", name());
         emit clientNameUpdated(prevName, name());
         break;
     }
-    case ConversationProtocol::USER_IS_TYPING:
+    case ServerProtocol::USER_IS_TYPING:
         emit receivedTypingIndicator();
         break;
     default:

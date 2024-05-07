@@ -1,13 +1,15 @@
-#ifndef CONVERSATIONPROTOCOL_H
-#define CONVERSATIONPROTOCOL_H
+
+#ifndef CLIENTPROTOCOL_H
+#define CLIENTPROTOCOL_H
 #include <QByteArray>
 #include <QString>
+#include <QStringList>
+#include <QDataStream>
 
-class ConversationProtocol
+class ClientProtocol
 {
 public:
     enum MessageType {
-        FILE_SENDING,
         NAME_SENDING,
         TEXT_SENDING,
         USER_IS_TYPING,
@@ -17,18 +19,16 @@ public:
         CLIENT_DISCONNECTED
     };
 
-    ConversationProtocol();
-    QByteArray serializeMessageData(MessageType type, QString message);
-    QByteArray sendTextMessage (QString message, QString receiver, QString sender);
+    ClientProtocol();
+    QByteArray serializeMessage(MessageType type, QString message);
+
+
+    QByteArray sendTextMessage (QString message, QString receiver);
     QByteArray sendTypingIndicator ();
     QByteArray sendUserName (QString name);
 
-    QByteArray setClientNameMessage (QString previousName, QString newName);
-    QByteArray setConnectionAckMessage (QString clientName, QStringList otherClients);
-    QByteArray setNewClientMessage (QString clientName);
-    QByteArray setClientDisconnectedMessage (QString clientName);
 
-    void loadData(QByteArray data);
+    void loadMessageData(QByteArray data);
 
     QString getName() const;
     void setName(const QString &newName);
@@ -41,12 +41,29 @@ public:
 
     QString getReceiver() const;
 
+    QString getClientName() const;
+
+    QString getPrevName() const;
+
+    QString getMyName() const;
+
+    QStringList getClientNames() const;
+
+    QString getSender() const;
+
+    void setMyName(const QString &newMyName);
+
 private:
     MessageType type;
     QString message;
     QString name;
     QString receiver;
+    QString clientName;
+    QString prevName;
+    QString myName;
+    QStringList clientNames;
+    QString sender;
 
 };
 
-#endif // CONVERSATIONPROTOCOL_H
+#endif // CLIENTPROTOCOL_H

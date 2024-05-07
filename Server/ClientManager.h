@@ -3,7 +3,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
-#include "ConversationProtocol.h"
+#include "ServerProtocol.h"
 #include <QHostAddress>
 
 class ClientManager : public QObject
@@ -34,7 +34,7 @@ private:
     QTcpSocket *clientSocket;
     QHostAddress serverIP;
     int serverPort;
-    ConversationProtocol protocol;
+    ServerProtocol protocol;
 };
 
 #endif // CLIENTMANAGER_H
