@@ -9,16 +9,16 @@ ChatWindow::ChatWindow(QTcpSocket * _client, QWidget *parent)
     ui->setupUi(this);
     client = new ClientManager(_client, this);
 
-    connect(client, &ClientManager::disconnected, this, &ChatWindow::clientDisconnected);
-    connect(client, &ClientManager::textMessageReceived, this, &ChatWindow::textMessageReceived);
-    connect(client, &ClientManager::nameChanged, this, &ChatWindow::onClientNameChanged);
-    connect(client, &ClientManager::isTyping, this, &ChatWindow::onTyping);
-    connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
+    connect(client, &ClientManager::serverDisconnected, this, &ChatWindow::clientDisconnected);
+    connect(client, &ClientManager::receivedTextMessage, this, &ChatWindow::textMessageReceived);
+    connect(client, &ClientManager::clientNameUpdated, this, &ChatWindow::onClientNameChanged);
+    connect(client, &ClientManager::receivedTypingIndicator, this, &ChatWindow::onTyping);
+    connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendTypingIndicator);
 }
 
 void ChatWindow::disconnect()
 {
-    client->disconnectFromHost();
+    client->disconnectFromServer();
 }
 
 ChatWindow::~ChatWindow()
@@ -28,7 +28,7 @@ ChatWindow::~ChatWindow()
 
 QTcpSocket *ChatWindow::getClient() const
 {
-    return client->getClient();
+    return client->getClientSocket();
 }
 
 
@@ -43,7 +43,7 @@ void ChatWindow::clientDisconnected()
 void ChatWindow::on_btnSend_clicked()
 {
     auto message = ui->editMessage->text().trimmed();
-    client->sendMessage(message);
+    client->sendTextMessage(message);
     ui->editMessage->setText("");
     ui->listMessages->addItem(message);
 }

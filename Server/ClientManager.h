@@ -13,28 +13,27 @@ public:
     explicit ClientManager(QHostAddress _ip = QHostAddress::LocalHost, int _port = 8080, QObject *parent = nullptr);
     explicit ClientManager(QTcpSocket * _client, QObject *parent = nullptr);
     void connectToServer();
-    void disconnectFromHost();
-    void sendMessage(QString message);
+    void disconnectFromServer();
+    void sendTextMessage(QString message);
     void sendUserName(QString name);
-    void sendIsTypingIndicator();
+    void sendTypingIndicator();
     QString name() const;
-    QTcpSocket* getClient() const;
+    QTcpSocket* getClientSocket() const;
 
 signals:
-    void connected();
-    void disconnected();
-    //void dataReceived(QByteArray data);
+    void serverConnected();
+    void serverDisconnected();
 
-    void textMessageReceived(QString message, QString receiver, QString sender);
-    void isTyping();
-    void nameChanged(QString prevName, QString name);
+    void receivedTextMessage(QString message, QString receiver, QString sender);
+    void receivedTypingIndicator();
+    void clientNameUpdated(QString prevName, QString name);
 private slots:
-    void readyRead();
+    void processIncomingData();
 
 private:
-    QTcpSocket *socket;
-    QHostAddress ip;
-    int port;
+    QTcpSocket *clientSocket;
+    QHostAddress serverIP;
+    int serverPort;
     ConversationProtocol protocol;
 };
 
