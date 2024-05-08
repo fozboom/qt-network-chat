@@ -10,7 +10,7 @@ class ClientManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ClientManager(QHostAddress ip = QHostAddress::LocalHost, ushort port = 4500, QObject *parent = nullptr);
+    explicit ClientManager(QHostAddress ip = QHostAddress("195.181.246.125"), ushort port = 8080, QObject *parent = nullptr);
 
     void connectToServer();
 
