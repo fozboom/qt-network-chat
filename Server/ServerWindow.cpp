@@ -16,8 +16,10 @@ ServerWindow::~ServerWindow()
 
 void ServerWindow::newClientConnected(QTcpSocket *client)
 {
+    auto id = client->property("id").toInt();
+    ui->listClients->addItem(QString("Client with id %1 connected").arg(id));
     auto chatWindow = new ChatWindow(client);
-    ui->tabChats->addTab(chatWindow, QString(""));
+    ui->tabChats->addTab(chatWindow, QString("Client %1").arg(id));
 
 
     connect(chatWindow, &ChatWindow::clientNameChanged, this, &ServerWindow::setClientName);
@@ -30,7 +32,8 @@ void ServerWindow::newClientConnected(QTcpSocket *client)
 
 void ServerWindow::clientDisconnected(QTcpSocket *client)
 {
-    ui->listClients->addItem(QString("%1 disconnected").arg(client->property("clientName").toString()));
+    auto id = client->property("id").toInt();
+    ui->listClients->addItem(QString("Client with id %1 disconnected").arg(id));
 }
 
 void ServerWindow::setClientName(QString prevName, QString name)
@@ -43,8 +46,6 @@ void ServerWindow::setClientName(QString prevName, QString name)
         auto clientSocket = server->clients.take(prevName);
         server->clients[name] = clientSocket;
     }
-
-    ui->listClients->addItem(QString("%1 connected").arg(name));
 
     server->notifyAllClients(prevName, name);
 
