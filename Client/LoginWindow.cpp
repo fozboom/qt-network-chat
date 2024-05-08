@@ -16,7 +16,7 @@ LoginWindow::~LoginWindow()
 
 void LoginWindow::setupDatabase() {
     db = QSqlDatabase::addDatabase("QPSQL");
-    db.setHostName("172.17.0.2");
+    db.setHostName("195.181.246.125");
     db.setDatabaseName("users");
     db.setUserName("postgres");
     db.setPassword("admin");
