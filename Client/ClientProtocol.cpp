@@ -12,7 +12,7 @@ QByteArray ClientProtocol::composeTextMessage(QString message, QString receiver)
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_5_0);
     out << CHAT_MESSAGE << receiver << message;
     return ba;
 }
@@ -27,7 +27,7 @@ QByteArray ClientProtocol::composeNameMessage(QString name)
 void ClientProtocol::parseData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
-    in.setVersion(QDataStream::Qt_6_0);
+    in.setVersion(QDataStream::Qt_5_0);
     in >> messageType;
     switch (messageType) {
     case CHAT_MESSAGE:
@@ -55,7 +55,7 @@ QByteArray ClientProtocol::prepareData(MessageType type, QString data)
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_5_0);
     out << type << data;
     return ba;
 }

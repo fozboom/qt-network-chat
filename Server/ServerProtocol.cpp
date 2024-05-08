@@ -12,7 +12,7 @@ QByteArray ServerProtocol::composeChatMessage(QString message, QString receiver,
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_5_0);
     out << CHAT_MESSAGE << sender << receiver << message;
     return ba;
 }
@@ -28,7 +28,7 @@ QByteArray ServerProtocol::composeUpdateNameMessage(QString prevName, QString na
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_5_0);
     out << UPDATE_NAME << prevName << name;
     return ba;
 }
@@ -37,7 +37,7 @@ QByteArray ServerProtocol::composeConnectionAckMessage(QString clientName, QStri
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_5_0);
     out << CONNECTION_ACK << clientName << otherClients;
     return ba;
 }
@@ -55,8 +55,10 @@ QByteArray ServerProtocol::composeClientDisconnectedMessage(QString clientName)
 void ServerProtocol::parseData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
-    in.setVersion(QDataStream::Qt_6_0);
-    in >> messageType;
+    in.setVersion(QDataStream::Qt_5_0);
+    qint32 _type;
+    in >> _type;
+    messageType = static_cast<MessageType>(_type);
     switch (messageType) {
     case CHAT_MESSAGE:
         in >> messageReceiver >> chatMessage;
@@ -73,7 +75,7 @@ QByteArray ServerProtocol::getData(MessageType type, QString data)
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_6_0);
+    out.setVersion(QDataStream::Qt_5_0);
     out << type << data;
     return ba;
 }
