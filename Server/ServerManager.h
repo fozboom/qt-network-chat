@@ -11,7 +11,7 @@ class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(ushort port = 4500, QObject *parent = nullptr);
+    explicit ServerManager(ushort port = 8080, QObject *parent = nullptr);
     void informClientsAboutNameChange(QString prevName, QString name);
     QMap<QString, QTcpSocket *> _clients;
 public slots:
