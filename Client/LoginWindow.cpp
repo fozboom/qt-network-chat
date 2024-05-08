@@ -2,7 +2,7 @@
 #include "ui_LoginWindow.h"
 #include <QMessageBox>
 LoginWindow::LoginWindow(QWidget *parent)
-    : QWidget(parent)
+    : QDialog(parent)
     , ui(new Ui::LoginWindow)
 {
     ui->setupUi(this);
@@ -12,6 +12,7 @@ LoginWindow::LoginWindow(QWidget *parent)
 LoginWindow::~LoginWindow()
 {
     delete ui;
+    db.close();
 }
 
 void LoginWindow::setupDatabase() {
@@ -77,8 +78,13 @@ void LoginWindow::on_nickname_returnPressed()
     }
     nickName = nickname;
     addNickname(nickname);
-    emit loginSuccessful();
-    emit userNameEntered(nickName);
+    accept();
+    close();
+}
+
+void LoginWindow::setNickName(const QString &newNickName)
+{
+    nickName = newNickName;
 }
 
 QString LoginWindow::getNickname() const

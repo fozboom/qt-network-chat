@@ -1,6 +1,7 @@
 #ifndef CLIENTWINDOW_H
 #define CLIENTWINDOW_H
 
+#include "LoginWindow.h"
 #include <QMainWindow>
 #include <ClientManager.h>
 
@@ -21,32 +22,28 @@ public:
     void connectToServer();
 
 private slots:
-    void onTextMessageReceived(QString sender, QString message);
 
     void on_btnSend_clicked();
 
+    void receiveChatMessage(QString sender, QString message);
 
-    void onTypingIndicatorReceived();
+    void onConnectionAcknowledgement(QString myName, QStringList clientsName);
+    void onNewClientConnectedToServer(QString clienName);
+    void onClientNameUpdated(QString prevName, QString clientName);
+    void onClientDisconnected(QString clientName);
 
+    void on_nameEdit_returnPressed();
 
-    void onConnectionAcknowledged(QString myName, QStringList clients);
-    void onNewClientConnected (QString name);
-    void onClientNameUpdated(QString prevName, QString name);
-    void onClientDisconnected(QString name);
     void on_editMessage_returnPressed();
-    void handleConnectionError(QAbstractSocket::SocketError socketError);
-
-public slots:
-    void updateUserNameAndNotifyServer(const QString& name);
 
 private:
     Ui::ClientWindow *ui;
     ClientManager *client;
-
-private:
+    LoginWindow *loginWindow;
+    void setupClient();
     void createMessage(const QString& username, const QString& message, bool isMyMessage);
     void processMessageAndSend();
-    void setupClient();
+
 
 };
 #endif // CLIENTWINDOW_H

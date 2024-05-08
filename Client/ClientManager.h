@@ -1,47 +1,47 @@
 #ifndef CLIENTMANAGER_H
 #define CLIENTMANAGER_H
 
+#include "ClientProtocol.h"
+
 #include <QObject>
 #include <QTcpSocket>
-#include "ClientProtocol.h"
-#include <QHostAddress>
 
 class ClientManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ClientManager(QHostAddress _ip = QHostAddress("195.181.246.125"), int _port = 8080, QObject *parent = nullptr);
+    explicit ClientManager(QHostAddress ip = QHostAddress::LocalHost, ushort port = 4500, QObject *parent = nullptr);
+
     void connectToServer();
 
+    void composeAndSendMessage(QString message, QString receiver);
+    void composeAndSendName(QString name);
+    void disconnectFromServer();
 
-    void sendTextMessage(QString message, QString receiver);
-    void sendUserName(QString name);
-    void sendIsTypingIndicator();
-    void updateProtocolUserName(QString name);
 signals:
-    void serverConnected();
-    void serverDisconnected();
+    void connected();
+    void disconnected();
 
-    void receivedTextMessage(QString sender, QString message);
-    void receivedTypingIndicator();
-    void receivedUserName(QString name);
+    void chatMessageReceived(QString sender, QString message);
+    void newNameReceived(QString name);
 
-    void receivedConnectionAcknowledgement(QString myName, QStringList clients);
-    void newClientConnectedToServer (QString name);
-    void clientNameUpdated(QString prevName, QString name);
-    void clientDisconnected(QString name);
-    void errorOccurred(QAbstractSocket::SocketError socketError);
+    void connectionAcknowledged(QString myName, QStringList clientsName);
+    void newClientConnectedToServer(QString clienName);
+    void clientNameUpdated(QString prevName, QString clientName);
+    void clientDisconnected(QString clientName);
+
+    void errorOccurred(const QString &errorString);
+
 private slots:
-    void processIncomingData();
-public slots:
-    void updateUserName(const QString& name);
+    void readyRead();
 
 private:
     QTcpSocket *socket;
-    QHostAddress serverIP;
-    int serverPort;
+    QHostAddress ip;
+    ushort port;
     ClientProtocol protocol;
-    QString userName;
+private:
+    void setupClient();
 };
 
 #endif // CLIENTMANAGER_H

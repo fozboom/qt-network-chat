@@ -1,68 +1,53 @@
-
 #ifndef CLIENTPROTOCOL_H
 #define CLIENTPROTOCOL_H
+
 #include <QByteArray>
 #include <QString>
 #include <QStringList>
-#include <QDataStream>
+
 
 class ClientProtocol
 {
 public:
-    enum MessageType {
-        NAME_SENDING,
-        TEXT_SENDING,
-        USER_IS_TYPING,
-        NAME_CHANGED,
+    enum MessageType{
+        CHAT_MESSAGE,
+        SEND_NAME,
+        UPDATE_NAME,
         CONNECTION_ACK,
-        NEW_CLIENT,
+        NEW_CLIENT_CONNECTED,
         CLIENT_DISCONNECTED
+
     };
 
     ClientProtocol();
-    QByteArray serializeMessage(MessageType type, QString message);
 
+    QByteArray composeTextMessage(QString message, QString receiver);
+    QByteArray composeNameMessage(QString name);
 
-    QByteArray sendTextMessage (QString message, QString receiver);
-    QByteArray sendTypingIndicator ();
-    QByteArray sendUserName (QString name);
+    void parseData(QByteArray data);
 
-
-    void loadMessageData(QByteArray data);
-
-    QString getName() const;
-    void setName(const QString &newName);
-
-    QString getMessage() const;
-    void setMessage(const QString &newMessage);
-
-    MessageType getType() const;
-    void setType(MessageType newType);
-
-    QString getReceiver() const;
-
-    QString getClientName() const;
-
-    QString getPrevName() const;
-
-    QString getMyName() const;
-
-    QStringList getClientNames() const;
-
-    QString getSender() const;
-
-    void setMyName(const QString &newMyName);
-
+    const QString &getChatMessage() const;
+    const QString &getNewName() const;
+    MessageType getMessageType() const;
+    QString getMessageReceiver() const;
+    const QString &getCurrentClientName() const;
+    const QString &getPreviousName() const;
+    const QStringList &getClientNames() const;
+    const QString &getMyName() const;
+    QString getMessageSender() const;
 private:
-    MessageType type;
-    QString message;
-    QString name;
-    QString receiver;
-    QString clientName;
-    QString prevName;
-    QString myName;
+    QByteArray prepareData(MessageType type, QString data);
+private:
+    MessageType messageType;
+    QString chatMessage;
+    QString newName;
+    QString messageReceiver;
+    QString currentClientName;
+    QString previousName;
     QStringList clientNames;
-    QString sender;
+    QString myName;
+    QString messageSender;
+
 
 };
 

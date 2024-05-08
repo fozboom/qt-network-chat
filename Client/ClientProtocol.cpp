@@ -1,133 +1,108 @@
 #include "ClientProtocol.h"
+
+#include <QFileInfo>
 #include <QIODevice>
-#include <QDebug>
 
-ClientProtocol::ClientProtocol() {}
-
-QByteArray ClientProtocol::serializeMessage(MessageType messageType, QString chatMessage)
+ClientProtocol::ClientProtocol()
 {
-    QByteArray serializedData;
-    QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_5_0);
-    dataStream << messageType << chatMessage;
-    return serializedData;
+
 }
 
-QByteArray ClientProtocol::sendTextMessage (QString message, QString receiver)
+QByteArray ClientProtocol::composeTextMessage(QString message, QString receiver)
 {
     QByteArray ba;
     QDataStream out(&ba, QIODevice::WriteOnly);
-    out.setVersion(QDataStream::Qt_5_0);
-    out << TEXT_SENDING << receiver << message;
+    out.setVersion(QDataStream::Qt_6_0);
+    out << CHAT_MESSAGE << receiver << message;
     return ba;
 }
 
 
-QByteArray ClientProtocol::sendTypingIndicator()
+QByteArray ClientProtocol::composeNameMessage(QString name)
 {
-    return serializeMessage(USER_IS_TYPING, "");
+    return prepareData(SEND_NAME, name);
 }
 
-QByteArray ClientProtocol::sendUserName(QString name)
-{
-    return serializeMessage(NAME_SENDING, name);
-}
 
-void ClientProtocol::loadMessageData(QByteArray data)
+void ClientProtocol::parseData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
-    in.setVersion(QDataStream::Qt_5_0);
-    in >> type;
-    qDebug() << "loadData";
-    foreach (auto c, clientNames) {
-        qDebug() << c << '\n';
-    }
-    switch(type) {
-    case TEXT_SENDING:
-        in >> sender >> receiver >> message;
+    in.setVersion(QDataStream::Qt_6_0);
+    in >> messageType;
+    switch (messageType) {
+    case CHAT_MESSAGE:
+        in >> messageSender >>messageReceiver >> chatMessage;
         break;
-    case NAME_SENDING:
-        in >> name;
+    case SEND_NAME:
+        in >> newName;
         break;
-    case NAME_CHANGED:
-        in >> prevName >> clientName;
+    case UPDATE_NAME:
+        in >> previousName >> currentClientName;
+        break;
+    case NEW_CLIENT_CONNECTED:
+    case CLIENT_DISCONNECTED:
+        in >> currentClientName;
         break;
     case CONNECTION_ACK:
         in >> myName >> clientNames;
         break;
-    case NEW_CLIENT:
-        in >> clientName;
-        break;
-    case CLIENT_DISCONNECTED:
-        in >> clientName;
-        break;
-
     default:
         break;
     }
 }
 
-QString ClientProtocol::getName() const
+QByteArray ClientProtocol::prepareData(MessageType type, QString data)
 {
-    return name;
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_0);
+    out << type << data;
+    return ba;
 }
 
-void ClientProtocol::setName(const QString &newName)
+QString ClientProtocol::getMessageSender() const
 {
-    name = newName;
+    return messageSender;
 }
 
-QString ClientProtocol::getMessage() const
-{
-    return message;
-}
-
-void ClientProtocol::setMessage(const QString &newMessage)
-{
-    message = newMessage;
-}
-
-ClientProtocol::MessageType ClientProtocol::getType() const
-{
-    return type;
-}
-
-void ClientProtocol::setType(MessageType newType)
-{
-    type = newType;
-}
-
-QString ClientProtocol::getReceiver() const
-{
-    return receiver;
-}
-
-QString ClientProtocol::getClientName() const
-{
-    return clientName;
-}
-
-QString ClientProtocol::getPrevName() const
-{
-    return prevName;
-}
-
-QString ClientProtocol::getMyName() const
+const QString &ClientProtocol::getMyName() const
 {
     return myName;
 }
 
-QStringList ClientProtocol::getClientNames() const
+const QStringList &ClientProtocol::getClientNames() const
 {
     return clientNames;
 }
 
-QString ClientProtocol::getSender() const
+const QString &ClientProtocol::getPreviousName() const
 {
-    return sender;
+    return previousName;
 }
 
-void ClientProtocol::setMyName(const QString &newMyName)
+const QString &ClientProtocol::getCurrentClientName() const
 {
-    myName = newMyName;
+    return currentClientName;
+}
+
+QString ClientProtocol::getMessageReceiver() const
+{
+    return messageReceiver;
+}
+
+
+ClientProtocol::MessageType ClientProtocol::getMessageType() const
+{
+    return messageType;
+}
+
+
+const QString &ClientProtocol::getNewName() const
+{
+    return newName;
+}
+
+const QString &ClientProtocol::getChatMessage() const
+{
+    return chatMessage;
 }

@@ -4,27 +4,64 @@
 #include "ChatMessageInfo.h"
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QInputDialog>
+#include <QDir>
+#include "ClientWindow.h"
+#include "ui_ClientWindow.h"
+#include <QInputDialog>
+#include <QDir>
 
 ClientWindow::ClientWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::ClientWindow)
+    , loginWindow(new LoginWindow())
 {
     ui->setupUi(this);
-    ui->btnSend->setEnabled(false);
-    ui->editMessage->setEnabled(false);
+
     setupClient();
+    client->connectToServer();
+
+    connect(client, &ClientManager::errorOccurred, [this](const QString &errorString) {
+        loginWindow->close();
+        QMessageBox::critical(this, tr("Error"), tr("Server not running. Details: ") + errorString);
+        QApplication::quit();
+        exit(EXIT_FAILURE);
+    });
+
+    if (loginWindow->exec() == QDialog::Rejected) {
+        client->disconnectFromServer();
+        QApplication::quit();
+        exit(EXIT_SUCCESS);
+    }
+
+    ui->nameEdit->setText(loginWindow->getNickname());
+    client->composeAndSendName(loginWindow->getNickname());
 }
 
 ClientWindow::~ClientWindow()
 {
+    loginWindow->removeNickname(loginWindow->getNickname());
     delete ui;
+    delete loginWindow;
 }
 
 
-
-void ClientWindow::onTextMessageReceived(QString sender, QString message)
+void ClientWindow::setupClient()
 {
-    createMessage(sender, sender + ": " + message, false);
+    client = new ClientManager();
+    connect(client , &ClientManager::connected, this, [this](){
+        ui->btnSend->setEnabled(true);
+        ui->editMessage->setEnabled(true);
+    });
+    connect(client, &ClientManager::disconnected, this, [this](){
+        ui->btnSend->setEnabled(false);
+        ui->editMessage->setEnabled(false);
+    });
+    connect(client, &ClientManager::chatMessageReceived, this, &ClientWindow::receiveChatMessage);
+    connect(client, &ClientManager::connectionAcknowledged, this, &ClientWindow::onConnectionAcknowledgement);
+    connect(client, &ClientManager::newClientConnectedToServer, this, &ClientWindow::onNewClientConnectedToServer);
+    connect(client, &ClientManager::clientDisconnected, this, &ClientWindow::onClientDisconnected);
+    connect(client, &ClientManager::clientNameUpdated, this, &ClientWindow::onClientNameUpdated);
 }
 
 
@@ -34,50 +71,6 @@ void ClientWindow::on_btnSend_clicked()
 {
     processMessageAndSend();
 }
-
-
-void ClientWindow::setupClient()
-{
-    client = new ClientManager();
-    ui->editMessage->setEnabled(true);
-    ui->btnSend->setEnabled(true);
-
-    connect(client, &ClientManager::serverConnected, [this] (){
-        ui->sendLayout->setEnabled(true);
-        qDebug() << "Connected to server";
-    });
-    connect(client, &ClientManager::serverDisconnected, [this] (){
-        ui->editMessage->setEnabled(false);
-        ui->btnSend->setEnabled(false);
-        statusBar()->showMessage("You have been disconnected by the server", 10000);
-        qDebug() << "Disconnected from server";
-    });
-    connect(client, &ClientManager::receivedTextMessage, this, &ClientWindow::onTextMessageReceived);
-    connect(client, &ClientManager::receivedTypingIndicator, this, &ClientWindow::onTypingIndicatorReceived);
-
-    connect(ui->editMessage, &QLineEdit::textChanged, client, &ClientManager::sendIsTypingIndicator);
-
-    connect(client, &ClientManager::receivedConnectionAcknowledgement, this, &ClientWindow::onConnectionAcknowledged);
-    connect(client, &ClientManager::newClientConnectedToServer, this, &ClientWindow::onNewClientConnected);
-    connect(client, &ClientManager::clientDisconnected, this, &ClientWindow::onClientDisconnected);
-    connect(client, &ClientManager::clientNameUpdated, this, &ClientWindow::onClientNameUpdated);
-
-}
-
-void ClientWindow::connectToServer()
-{
-    client->connectToServer();
-
-}
-
-void ClientWindow::handleConnectionError(QAbstractSocket::SocketError socketError)
-{
-    Q_UNUSED(socketError);
-    QMessageBox::critical(this, "Error", "Server not running");
-    close();
-}
-
-
 
 void ClientWindow::createMessage(const QString& username, const QString& message, bool isMyMessage)
 {
@@ -99,64 +92,71 @@ void ClientWindow::processMessageAndSend()
         QMessageBox::warning(this, tr("Warning"), tr("Message cannot be empty"));
         return;
     }
-    client->sendTextMessage(data, ui->receiverBox->currentText());
+    client->composeAndSendMessage(data, ui->receiverBox->currentText());
     ui->editMessage->setText("");
 
     createMessage("", data.toUtf8(), true);
 }
 
-
-void ClientWindow::onTypingIndicatorReceived()
+void ClientWindow::receiveChatMessage(QString sender, QString message)
 {
-    statusBar()->showMessage("Server is typing...", 800);
+    createMessage(sender, sender + ": " + message, false);
 }
 
 
 
-void ClientWindow::onConnectionAcknowledged(QString myName, QStringList clients)
+
+void ClientWindow::onConnectionAcknowledgement(QString myName, QStringList clientsName)
 {
     ui->receiverBox->clear();
-    clients.prepend("Server");
-    foreach (auto cl, clients) {
-        ui->receiverBox->addItem(cl);
+    clientsName.prepend("Server");
+    foreach (auto client, clientsName) {
+        ui->receiverBox->addItem(client);
     }
-
+    setWindowTitle(myName);
 }
 
-void ClientWindow::onNewClientConnected(QString name)
+void ClientWindow::onNewClientConnectedToServer(QString clienName)
 {
-    ui->receiverBox->addItem(name);
-    ui->receiverBox->update();
-
-
+    ui->receiverBox->addItem(clienName);
 }
 
-void ClientWindow::onClientNameUpdated(QString prevName, QString name)
+void ClientWindow::onClientNameUpdated(QString prevName, QString clientName)
 {
     for (int i = 0; i < ui->receiverBox->count(); ++i) {
         if (ui->receiverBox->itemText(i) == prevName) {
-            ui->receiverBox->setItemText(i, name);
-
+            ui->receiverBox->setItemText(i, clientName);
             return;
         }
     }
 }
 
-void ClientWindow::onClientDisconnected(QString name)
+void ClientWindow::onClientDisconnected(QString clientName)
 {
     for (int i = 0; i < ui->receiverBox->count(); ++i) {
-        if (ui->receiverBox->itemText(i) == name) {
+        if (ui->receiverBox->itemText(i) == clientName) {
             ui->receiverBox->removeItem(i);
             return;
         }
     }
 }
 
-void ClientWindow::updateUserNameAndNotifyServer(const QString &name)
+void ClientWindow::on_nameEdit_returnPressed()
 {
-    client->updateUserName(name);
+    auto newName = ui->nameEdit->text().trimmed();
+    if (loginWindow->doesNicknameExist(newName)) {
+        QMessageBox::warning(this, tr("Error"), tr("This nickname is already taken"));
+        ui->nameEdit->setText(loginWindow->getNickname());
+        return;
+    }
 
+    loginWindow->removeNickname(loginWindow->getNickname());
+    loginWindow->addNickname(newName);
+
+    loginWindow->setNickName(newName);
+    client->composeAndSendName(newName);
 }
+
 
 void ClientWindow::on_editMessage_returnPressed()
 {

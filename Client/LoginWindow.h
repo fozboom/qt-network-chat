@@ -5,12 +5,13 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
+#include <QDialog>
 
 namespace Ui {
 class LoginWindow;
 }
 
-class LoginWindow : public QWidget
+class LoginWindow : public QDialog
 {
     Q_OBJECT
 
@@ -19,24 +20,19 @@ public:
     ~LoginWindow();
     QString getNickname() const;
     void removeNickname(const QString &nickname);
-
-signals:
-    void loginSuccessful();
-    void userNameEntered(const QString& name);
+    bool doesNicknameExist(const QString &nickname);
+    void addNickname(const QString &nickname);
+    void setNickName(const QString &newNickName);
 
 private slots:
-
-
     void on_nickname_returnPressed();
-
 private:
     Ui::LoginWindow *ui;
     QSqlDatabase db;
     QString nickName;
-
+private:
     void setupDatabase();
-    bool doesNicknameExist(const QString &nickname);
-    void addNickname(const QString &nickname);
+
 };
 
 #endif // LOGINWINDOW_H

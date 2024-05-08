@@ -10,18 +10,18 @@ int main(int argc, char *argv[])
     LoginWindow login;
     ClientWindow client;
 
-    QObject::connect(&login, &LoginWindow::loginSuccessful, [&]() {
-        login.close();
-        client.updateUserNameAndNotifyServer(login.getNickname());
-        client.connectToServer();
-        client.setWindowTitle(login.getNickname());
-        client.show();
-    });
-    QObject::connect(&a, &QApplication::aboutToQuit, [&]() {
-        login.removeNickname(login.getNickname());
-    });
+    // QObject::connect(&login, &LoginWindow::loginSuccessful, [&]() {
+    //     login.close();
+    //     client.updateUserNameAndNotifyServer(login.getNickname());
+    //     client.connectToServer();
+    //     client.setWindowTitle(login.getNickname());
+    //     client.show();
+    // });
+    // QObject::connect(&a, &QApplication::aboutToQuit, [&]() {
+    //     login.removeNickname(login.getNickname());
+    // });
 
-    login.show();
+    client.show();
 
     return a.exec();
 }

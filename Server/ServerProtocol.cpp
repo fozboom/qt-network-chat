@@ -1,116 +1,99 @@
 #include "ServerProtocol.h"
+
+#include <QFileInfo>
 #include <QIODevice>
-#include <QDataStream>
 
-ServerProtocol::ServerProtocol() {}
-
-QByteArray ServerProtocol::serializeMessage(MessageType messageType, QString chatMessage)
+ServerProtocol::ServerProtocol()
 {
-    QByteArray serializedData;
-    QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_5_0);
-    dataStream << messageType << chatMessage;
-    return serializedData;
+
 }
 
-QByteArray ServerProtocol::sendTextMessage(QString message, QString receiver, QString sender)
+QByteArray ServerProtocol::composeChatMessage(QString message, QString receiver, QString sender)
 {
-    QByteArray serializedData;
-    QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_5_0);
-    dataStream << TEXT_SENDING << sender << receiver << message;
-    return serializedData;
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_0);
+    out << CHAT_MESSAGE << sender << receiver << message;
+    return ba;
 }
 
 
-QByteArray ServerProtocol::sendTypingIndicator()
+QByteArray ServerProtocol::composeNameMessage(QString name)
 {
-    return serializeMessage(USER_IS_TYPING, "");
+    return getData(SEND_NAME, name);
 }
 
-QByteArray ServerProtocol::sendUserName(QString name)
+
+QByteArray ServerProtocol::composeUpdateNameMessage(QString prevName, QString name)
 {
-    return serializeMessage(NAME_SENDING, name);
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_0);
+    out << UPDATE_NAME << prevName << name;
+    return ba;
 }
 
-QByteArray ServerProtocol::setClientNameMessage(QString previousName, QString newName)
+QByteArray ServerProtocol::composeConnectionAckMessage(QString clientName, QStringList otherClients)
 {
-    QByteArray serializedData;
-    QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_5_0);
-    dataStream << NAME_CHANGED<< previousName << newName;
-    return serializedData;
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_0);
+    out << CONNECTION_ACK << clientName << otherClients;
+    return ba;
 }
 
-QByteArray ServerProtocol::setConnectionAckMessage(QString clientName, QStringList otherClients)
+QByteArray ServerProtocol::composeNewClientMessage(QString clientName)
 {
-    QByteArray serializedData;
-    QDataStream dataStream(&serializedData, QIODevice::WriteOnly);
-    dataStream.setVersion(QDataStream::Qt_5_0);
-    dataStream << CONNECTION_ACK<< clientName << otherClients;
-    return serializedData;
+    return getData(NEW_CLIENT_CONNECTED, clientName);
 }
 
-QByteArray ServerProtocol::setNewClientMessage(QString clientName)
+QByteArray ServerProtocol::composeClientDisconnectedMessage(QString clientName)
 {
-    return serializeMessage(NEW_CLIENT, clientName);
+    return getData(CLIENT_DISCONNECTED, clientName);
 }
 
-QByteArray ServerProtocol::setClientDisconnectedMessage(QString clientName)
-{
-    return serializeMessage(CLIENT_DISCONNECTED, clientName);
-}
-
-void ServerProtocol::loadMessageData(QByteArray data)
+void ServerProtocol::parseData(QByteArray data)
 {
     QDataStream in(&data, QIODevice::ReadOnly);
-    in.setVersion(QDataStream::Qt_5_0);
-    qint32 _type;
-    in >> _type;
-
-    type = static_cast<MessageType>(_type);
-    switch(type) {
-    case TEXT_SENDING:
-        in >> receiver >> message;
+    in.setVersion(QDataStream::Qt_6_0);
+    in >> messageType;
+    switch (messageType) {
+    case CHAT_MESSAGE:
+        in >> messageReceiver >> chatMessage;
         break;
-    case NAME_SENDING:
-        in >> name;
+    case SEND_NAME:
+        in >> newName;
+        break;
     default:
         break;
     }
 }
 
-QString ServerProtocol::getName() const
+QByteArray ServerProtocol::getData(MessageType type, QString data)
 {
-    return name;
+    QByteArray ba;
+    QDataStream out(&ba, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_6_0);
+    out << type << data;
+    return ba;
 }
 
-void ServerProtocol::setName(const QString &newName)
+const QString &ServerProtocol::getMessageReceiver() const
 {
-    name = newName;
+    return messageReceiver;
 }
 
-QString ServerProtocol::getMessage() const
+const QString &ServerProtocol::getNewName() const
 {
-    return message;
+    return newName;
 }
 
-void ServerProtocol::setMessage(const QString &newMessage)
+ServerProtocol::MessageType ServerProtocol::getMessageType() const
 {
-    message = newMessage;
+    return messageType;
 }
 
-ServerProtocol::MessageType ServerProtocol::getType() const
+const QString &ServerProtocol::getChatMessage() const
 {
-    return type;
-}
-
-void ServerProtocol::setType(MessageType newType)
-{
-    type = newType;
-}
-
-QString ServerProtocol::getReceiver() const
-{
-    return receiver;
+    return chatMessage;
 }

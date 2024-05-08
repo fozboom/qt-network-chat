@@ -1,90 +1,74 @@
-
 #include "ServerManager.h"
 
-ServerManager::ServerManager(int portNumber, QObject *parent)
+ServerManager::ServerManager(ushort port, QObject *parent)
     : QObject{parent}
-
 {
-    startServer(portNumber);
+    setupServer(port);
 }
 
-void ServerManager::notifyAllClients(QString prevName, QString name)
+void ServerManager::informClientsAboutNameChange(QString prevName, QString name)
 {
-    auto message = protocol.setClientNameMessage(prevName, name);
-    foreach(auto c, clients)
-    {
-        auto clientName = c->property("clientName").toString();
-        if (clientName != name)
-        {
-            c->write(message);
+    auto message = protocol.composeUpdateNameMessage(prevName, name);
+    foreach (auto cl, _clients) {
+        auto clientName = cl->property("clientName").toString();
+        if (clientName != name) {
+            cl->write(message);
         }
     }
 }
 
 void ServerManager::onTextForOtherClients(QString message, QString receiver, QString sender)
 {
-    auto mes = protocol.sendTextMessage(message, receiver, sender);
-
-    foreach(auto c, clients)
-    {
-        auto clientName = c->property("clientName").toString();
-        if (clientName == receiver)
-        {
-            c->write(mes);
+    auto msg = protocol.composeChatMessage(message, receiver, sender);
+    foreach (auto cl, _clients) {
+        auto clientName = cl->property("clientName").toString();
+        if (clientName == receiver) {
+            cl->write(msg);
             return;
         }
     }
 }
 
-void ServerManager::newClientConnectionReceived()
+void ServerManager::onNewClientConnection()
 {
     auto client = server->nextPendingConnection();
 
-    auto id = clients.count();
-    auto clientName = QString("Client %1").arg(id);
+    auto id = _clients.count() + 1;
+    auto clientName = QString("Client (%1)").arg(id);
     client->setProperty("id", id);
     client->setProperty("clientName", clientName);
 
-    connect(client, &QTcpSocket::disconnected, this, &ServerManager::clientConnectionAborted);
+    connect(client, &QTcpSocket::disconnected, this, &ServerManager::onClientDisconnected);
     emit newClientConnected(client);
-    if (id >= 0)
-    {
-        auto message = protocol.setConnectionAckMessage(clientName, clients.keys());
+
+    if (id > 1) {
+        auto message = protocol.composeConnectionAckMessage(clientName, _clients.keys());
         client->write(message);
 
-        auto newMessage = protocol.setNewClientMessage(clientName);
-
-        foreach (auto c, clients) {
-            c->write(newMessage);
+        auto newClientMessage = protocol.composeNewClientMessage(clientName);
+        foreach (auto cl, _clients) {
+            cl->write(newClientMessage);
         }
     }
-    clients[clientName] = client;
+    _clients[clientName] = client;
 }
 
-void ServerManager::clientConnectionAborted()
+void ServerManager::onClientDisconnected()
 {
     auto client = qobject_cast<QTcpSocket *>(sender());
     auto clientName = client->property("clientName").toString();
-    clients.remove(clientName);
-
-    auto message = protocol.setClientDisconnectedMessage(clientName);
-    foreach (auto c, clients) {
-        c->write(message);
+    _clients.remove(clientName);
+    auto message = protocol.composeClientDisconnectedMessage(clientName);
+    foreach (auto cl, _clients) {
+        cl->write(message);
     }
+
     emit clientDisconnected(client);
 }
 
-
-
-void ServerManager::startServer(int portNumber)
+void ServerManager::setupServer(ushort port)
 {
     server = new QTcpServer(this);
-    connect(server, &QTcpServer::newConnection, this, &ServerManager::newClientConnectionReceived);
-    server->listen(QHostAddress::Any, portNumber);
-}
-
-void ServerManager::disconnectClient(QTcpSocket *client, const QString &reason)
-{
-    auto message = protocol.sendTextMessage(reason, client->property("clientName").toString(), "Server");
-    client->write(message);
+    connect(server, &QTcpServer::newConnection, this, &ServerManager::onNewClientConnection);
+    server->listen(QHostAddress::Any, port);
 }

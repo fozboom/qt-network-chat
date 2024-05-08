@@ -1,38 +1,33 @@
 #ifndef SERVERMANAGER_H
 #define SERVERMANAGER_H
+
+#include "ServerProtocol.h"
+
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include "ServerProtocol.h"
 
 class ServerManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit ServerManager(int portNumber = 8080, QObject *parent = nullptr);
-    void notifyAllClients (QString prevName, QString name);
-    void disconnectClient(QTcpSocket *client, const QString& reason);
-    QMap <QString, QTcpSocket *> clients;
-
+    explicit ServerManager(ushort port = 4500, QObject *parent = nullptr);
+    void informClientsAboutNameChange(QString prevName, QString name);
+    QMap<QString, QTcpSocket *> _clients;
 public slots:
     void onTextForOtherClients(QString message, QString receiver, QString sender);
 signals:
-    void newClientConnected(QTcpSocket * client);
-    void clientDisconnected(QTcpSocket * client);
-
+    void newClientConnected(QTcpSocket *client);
+    void clientDisconnected(QTcpSocket *client);
 private slots:
-    void newClientConnectionReceived();
-    void clientConnectionAborted();
-
-
+    void onNewClientConnection();
+    void onClientDisconnected();
 
 private:
-    QTcpServer * server;
-
+    QTcpServer *server;
     ServerProtocol protocol;
 private:
-    void startServer(int portNumber);
-
+    void setupServer(ushort port);
 };
 
 #endif // SERVERMANAGER_H

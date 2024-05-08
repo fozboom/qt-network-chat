@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include <QTcpSocket>
-#include "ClientManager.h"
+#include "ServerClientManager.h"
 
 namespace Ui {
 class ChatWindow;
@@ -17,27 +17,23 @@ public:
     explicit ChatWindow(QTcpSocket * _client, QWidget *parent = nullptr);
     void disconnect();
     ~ChatWindow();
-    QTcpSocket* getClient() const;
 private slots:
 
     void clientDisconnected();
 
     void on_btnSend_clicked();
 
-    void textMessageReceived(QString message, QString receiver, QString sender);
-
-    void onTyping();
+    void chatMessageReceived(QString message, QString receiver, QString sender);
 
     void onClientNameChanged(QString prevName, QString name);
 signals:
-    void clientNameChanged(QString prevName, QString name);
-    void isTyping (QString message);
+    void clientNameUpdated(QString prevName, QString name);
     void textForOtherClients(QString message, QString receiver, QString sender);
 
 
 private:
     Ui::ChatWindow *ui;
-    ClientManager *client;
+    ServerClientManager *client;
 };
 
 #endif // CHATWINDOW_H

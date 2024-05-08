@@ -17,17 +17,12 @@ ServerWindow::~ServerWindow()
 void ServerWindow::newClientConnected(QTcpSocket *client)
 {
     auto id = client->property("id").toInt();
-    ui->listClients->addItem(QString("Client with id %1 connected").arg(id));
-    auto chatWindow = new ChatWindow(client);
-    ui->tabChats->addTab(chatWindow, QString("Client %1").arg(id));
+    ui->listClients->addItem(QString("New Client added: %1").arg(id));
+    auto chatWidget= new ChatWindow(client, ui->tabChats);
+    ui->tabChats->addTab(chatWidget, QString("Client (%1)").arg(id));
 
-
-    connect(chatWindow, &ChatWindow::clientNameChanged, this, &ServerWindow::setClientName);
-    connect(chatWindow, &ChatWindow::isTyping, [this](QString name) {
-        this->statusBar()->showMessage(name, 800);
-    });
-
-    connect(chatWindow, &ChatWindow::textForOtherClients, server, &ServerManager::onTextForOtherClients);
+    connect(chatWidget, &ChatWindow::clientNameUpdated, this, &ServerWindow::updateClientName);
+    connect(chatWidget, &ChatWindow::textForOtherClients, server, &ServerManager::onTextForOtherClients);
 }
 
 void ServerWindow::clientDisconnected(QTcpSocket *client)
@@ -36,19 +31,18 @@ void ServerWindow::clientDisconnected(QTcpSocket *client)
     ui->listClients->addItem(QString("Client with id %1 disconnected").arg(id));
 }
 
-void ServerWindow::setClientName(QString prevName, QString name)
+void ServerWindow::updateClientName(QString prevName, QString name)
 {
     auto widget = qobject_cast<QWidget *>(sender());
     auto index = ui->tabChats->indexOf(widget);
     ui->tabChats->setTabText(index, name);
 
-    if (server->clients.contains(prevName)) {
-        auto clientSocket = server->clients.take(prevName);
-        server->clients[name] = clientSocket;
+    if (server->_clients.contains(prevName)) {
+        auto clientSocket = server->_clients.take(prevName);
+        server->_clients[name] = clientSocket;
     }
 
-    server->notifyAllClients(prevName, name);
-
+    server->informClientsAboutNameChange(prevName, name);
 }
 
 void ServerWindow::setupServerConfiguration()
@@ -60,8 +54,7 @@ void ServerWindow::setupServerConfiguration()
 
 void ServerWindow::on_tabChats_tabCloseRequested(int index)
 {
-    auto chatWindow = qobject_cast<ChatWindow *> (ui->tabChats->widget(index));
-    server->disconnectClient(chatWindow->getClient(), "You have been disconnected by the server.");
-    chatWindow->disconnect();
+    auto chatWidget = qobject_cast<ChatWindow *>(ui->tabChats->widget(index));
+    chatWidget->disconnect();
     ui->tabChats->removeTab(index);
 }

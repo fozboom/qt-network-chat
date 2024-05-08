@@ -1,85 +1,75 @@
 #include "ClientManager.h"
-#include <QDebug>
-#include <QMessageBox>
-ClientManager::ClientManager(QHostAddress _ip, int _port, QObject *parent)
-    : QObject{parent}
-    , serverIP(_ip)
-    , serverPort(_port)
+
+ClientManager::ClientManager(QHostAddress ip, ushort port, QObject *parent)
+    : QObject{parent},
+    ip(ip),
+    port(port)
 {
-    socket = new QTcpSocket(this);
-    connect (socket, &QTcpSocket::connected, this, &ClientManager::serverConnected);
-    connect (socket, &QTcpSocket::disconnected, this, &ClientManager::serverDisconnected);
-    connect (socket, &QTcpSocket::readyRead, this, &ClientManager::processIncomingData);
+    setupClient();
 }
-
-
 
 void ClientManager::connectToServer()
 {
-    socket->connectToHost(serverIP, serverPort);
-    if (!socket->waitForConnected(3000)) {
-        QMessageBox::critical(nullptr, "Error", "Server offline");
-        exit(EXIT_FAILURE);
-    } else {
-        protocol.setMyName(userName);
-        socket->write(protocol.sendUserName(userName));
-    }
+    socket->connectToHost(ip, port);
 }
 
-void ClientManager::sendTextMessage(QString message, QString receiver)
+void ClientManager::composeAndSendMessage(QString message, QString receiver)
 {
-    socket->write(protocol.sendTextMessage(message, receiver));
+    socket->write(protocol.composeTextMessage(message, receiver));
 }
 
-void ClientManager::sendUserName(QString name)
+void ClientManager::composeAndSendName(QString name)
 {
-    socket->write(protocol.sendUserName(name));
+    socket->write(protocol.composeNameMessage(name));
 }
 
-void ClientManager::sendIsTypingIndicator()
+
+void ClientManager::disconnectFromServer()
 {
-    socket->write(protocol.sendTypingIndicator());
+    socket->disconnectFromHost();
 }
 
-void ClientManager::updateProtocolUserName(QString name)
-{
-    protocol.setMyName(name);
-}
-
-void ClientManager::processIncomingData()
+void ClientManager::readyRead()
 {
     auto data = socket->readAll();
-    protocol.loadMessageData(data);
-    switch (protocol.getType()) {
-    case ClientProtocol::TEXT_SENDING:
-        emit receivedTextMessage(protocol.getSender(),protocol.getMessage());
+    protocol.parseData(data);
+    switch (protocol.getMessageType()) {
+    case ClientProtocol::CHAT_MESSAGE:
+        emit chatMessageReceived(protocol.getMessageSender(), protocol.getChatMessage());
         break;
-    case ClientProtocol::NAME_SENDING:
-        emit receivedUserName(protocol.getName());
-        break;
-    case ClientProtocol::USER_IS_TYPING:
-        emit receivedTypingIndicator();
+    case ClientProtocol::SEND_NAME:
+        emit newNameReceived(protocol.getNewName());
         break;
     case ClientProtocol::CONNECTION_ACK:
-        emit receivedConnectionAcknowledgement(protocol.getMyName(), protocol.getClientNames());
+        emit connectionAcknowledged(protocol.getMyName(), protocol.getClientNames());
         break;
-    case ClientProtocol::NEW_CLIENT:
-        emit newClientConnectedToServer(protocol.getClientName());
+    case ClientProtocol::NEW_CLIENT_CONNECTED:
+        emit newClientConnectedToServer(protocol.getCurrentClientName());
         break;
     case ClientProtocol::CLIENT_DISCONNECTED:
-        emit clientDisconnected(protocol.getClientName());
+        emit clientDisconnected(protocol.getCurrentClientName());
         break;
-    case ClientProtocol::NAME_CHANGED:
-        emit clientNameUpdated(protocol.getPrevName(), protocol.getClientName());
+    case ClientProtocol::UPDATE_NAME:
+        emit clientNameUpdated(protocol.getPreviousName(), protocol.getCurrentClientName());
         break;
-
     default:
         break;
     }
 }
 
-void ClientManager::updateUserName(const QString &name)
+void ClientManager::setupClient()
 {
-    userName = name;
-    protocol.setMyName(userName);
+    socket = new QTcpSocket(this);
+    connect(socket, &QTcpSocket::connected, this, &ClientManager::connected);
+    connect(socket, &QTcpSocket::disconnected, this, &ClientManager::disconnected);
+    connect(socket, &QTcpSocket::readyRead, this, &ClientManager::readyRead);
+    connect(socket, QOverload<QAbstractSocket::SocketError>::of(&QAbstractSocket::errorOccurred),
+            [this](QAbstractSocket::SocketError socketError) {
+                Q_UNUSED(socketError)
+                emit errorOccurred(socket->errorString());
+            });
 }
+
+
+
+
