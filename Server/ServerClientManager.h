@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QHostAddress>
 
 class ServerClientManager : public QObject
 {
